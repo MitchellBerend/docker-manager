@@ -14,9 +14,7 @@ use std::error::Error;
 use std::io::Read;
 use std::str::from_utf8;
 
-use tokio;
 use clap::Parser;
-use regex;
 use futures::{stream, StreamExt};
 
 mod parser;
@@ -76,7 +74,7 @@ async fn send_ps_command(nodes: &[String]) -> Result<(), Box<dyn Error>> {
                     .arg("docker")
                     .arg("ps")
                     .arg("-a").output().await.unwrap();
-                    return_str.push_str(&format!("{}", String::from(from_utf8(&output.stdout).unwrap())));
+                    return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
                 },
                 Err(_) => {
                     return_str.push_str(&format!("Could not connect to {}", &owned_node));
@@ -93,8 +91,8 @@ async fn send_ps_command(nodes: &[String]) -> Result<(), Box<dyn Error>> {
 
 async fn send_log_command(node: &str, container: &str) -> Result<(), Box<dyn Error>> {
     let session = openssh::SessionBuilder::default()
-    .connect_timeout(std::time::Duration::new(1,0))
-    .connect(node).await;
+        .connect_timeout(std::time::Duration::new(1,0))
+        .connect(node).await;
     println!("host {:?}", &node);
     match session {
         Ok(session) => {
