@@ -34,7 +34,7 @@ pub enum DockerCommand {
 #[clap(
     author = "Mitchell Berendhuysen",
     version,
-    about = "This tool mimicks the functionality of the docker cli but abstracts its over all connected nodes."
+    about = "This tool mimics the functionality of the docker cli but abstracts its over all connected nodes."
 )]
 pub struct MainParser {
     /// The docker cli command to be executed.
