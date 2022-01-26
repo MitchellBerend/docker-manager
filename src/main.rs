@@ -1,14 +1,17 @@
 // This binary functions as a cli to make managing docker applications on multiple nodes easier.
 // functions it will mimick are:
-// ps
+// ps (done)
 //      This will show a list of all containers and what node it is on
-// exec
+// exec (done)
 //      This will execute a command on the specified docker container
 //      no flags will be present for now
-// logs
+// logs (done)
 //      This will fetch the logs of specified docker containers
 // restart
 //      This will restart a specific docker container
+// run
+//      This will start a new container with the specified flags
+
 
 use std::error::Error;
 use std::io::Read;
@@ -38,7 +41,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &args.regex))?;
     let regex_iter = hostname_regex.find_iter(config_str);
 
-    drop(ssh_conf_file);
+    // explicit drop block since these are not needed anymore
+    {
+        drop(config_str);
+        drop(ssh_conf_file);
+    }
 
     match args.command {
         parser::DockerCommand::Ps => {
@@ -91,7 +98,7 @@ async fn send_ps_command(nodes: &[String]) -> Result<(), Box<dyn Error>> {
 
 async fn send_log_command(node: &str, container: &str) -> Result<(), Box<dyn Error>> {
     let session = openssh::SessionBuilder::default()
-        .connect_timeout(std::time::Duration::new(1,0))
+        .connect_timeout(std::time::Duration::from_secs(1))
         .connect(node).await;
     println!("host {:?}", &node);
     match session {
