@@ -12,7 +12,6 @@
 // run
 //      This will start a new container with the specified flags
 
-
 use std::error::Error;
 use std::io::Read;
 use std::str::from_utf8;
@@ -24,41 +23,42 @@ mod parser;
 
 const CONCURRENT_REQUESTS: usize = 10;
 
-
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = parser::MainParser::parse();
 
-    let mut config_buf: Vec<u8> = vec!();
+    let mut config_buf: Vec<u8> = vec![];
     let mut _path = std::env::var("HOME")?;
     _path.push_str("/.ssh/config");
     let mut ssh_conf_file = std::fs::File::open(_path)?;
 
     ssh_conf_file.read_to_end(&mut config_buf)?;
-    let config_str = from_utf8(&config_buf)?;
+    let config_str: String = String::from(from_utf8(&config_buf)?);
 
     let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &args.regex))?;
-    let regex_iter = hostname_regex.find_iter(config_str);
+    let regex_iter = hostname_regex.find_iter(&config_str);
 
     // explicit drop block since these are not needed anymore
     {
-        drop(config_str);
         drop(ssh_conf_file);
     }
 
     match args.command {
         parser::DockerCommand::Ps => {
-            let mut nodes: Vec<String> = vec!();
+            let mut nodes: Vec<String> = vec![];
             for host in regex_iter {
                 nodes.push(String::from(host.as_str().split_once(" ").unwrap().1));
             }
             send_ps_command(&nodes).await?;
-        },
-        parser::DockerCommand::Exec {node, container, command} => {
+        }
+        parser::DockerCommand::Exec {
+            node,
+            container,
+            command,
+        } => {
             send_exec_command(&node, &container, &command).await?;
         }
-        parser::DockerCommand::Logs {node, container } => {
+        parser::DockerCommand::Logs { node, container } => {
             send_log_command(&node, &container).await?;
         }
     }
@@ -68,30 +68,38 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 async fn send_ps_command(nodes: &[String]) -> Result<(), Box<dyn Error>> {
     let _bodies = stream::iter(nodes)
-        .map( |node| async move {
+        .map(|node| async move {
             let mut return_str = String::new();
             let owned_node = node.clone();
             let session = openssh::SessionBuilder::default()
-                .connect_timeout(std::time::Duration::new(1,0))
-                .connect(&owned_node).await;
+                .connect_timeout(std::time::Duration::new(1, 0))
+                .connect(&owned_node)
+                .await;
             return_str.push_str(&format!("host {:?}\n", &owned_node));
             match session {
                 Ok(session) => {
-                    let output = session.command("sudo")
-                    .arg("docker")
-                    .arg("ps")
-                    .arg("-a").output().await.unwrap();
+                    let output = session
+                        .command("sudo")
+                        .arg("docker")
+                        .arg("ps")
+                        .arg("-a")
+                        .output()
+                        .await
+                        .unwrap();
                     return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
-                },
+                }
                 Err(_) => {
                     return_str.push_str(&format!("Could not connect to {}", &owned_node));
                 }
             }
             return_str
-        }).buffer_unordered(CONCURRENT_REQUESTS);
-    _bodies.for_each(|body| async move {
-        println!("{}", body);
-    }).await;
+        })
+        .buffer_unordered(CONCURRENT_REQUESTS);
+    _bodies
+        .for_each(|body| async move {
+            println!("{}", body);
+        })
+        .await;
 
     Ok(())
 }
@@ -99,16 +107,24 @@ async fn send_ps_command(nodes: &[String]) -> Result<(), Box<dyn Error>> {
 async fn send_log_command(node: &str, container: &str) -> Result<(), Box<dyn Error>> {
     let session = openssh::SessionBuilder::default()
         .connect_timeout(std::time::Duration::from_secs(1))
-        .connect(node).await;
+        .connect(node)
+        .await;
     println!("host {:?}", &node);
     match session {
         Ok(session) => {
-            let output = session.command("sudo")
-            .arg("docker")
-            .arg("logs")
-            .arg(container).output().await?;
-            println!("stdout: {}\n\n\n\nstderr: {}", String::from(from_utf8(&output.stdout)?), String::from(from_utf8(&output.stderr)?));
-        },
+            let output = session
+                .command("sudo")
+                .arg("docker")
+                .arg("logs")
+                .arg(container)
+                .output()
+                .await?;
+            println!(
+                "stdout: {}\n\n\n\nstderr: {}",
+                String::from(from_utf8(&output.stdout)?),
+                String::from(from_utf8(&output.stderr)?)
+            );
+        }
         Err(_) => {
             println!("Could not connect to {}", &node);
         }
@@ -116,20 +132,32 @@ async fn send_log_command(node: &str, container: &str) -> Result<(), Box<dyn Err
     Ok(())
 }
 
-async fn send_exec_command(node: &str, container: &str, command: &str) -> Result<(), Box<dyn Error>> {
+async fn send_exec_command(
+    node: &str,
+    container: &str,
+    command: &str,
+) -> Result<(), Box<dyn Error>> {
     let session = openssh::SessionBuilder::default()
-    .connect_timeout(std::time::Duration::new(1,0))
-    .connect(node).await;
+        .connect_timeout(std::time::Duration::new(1, 0))
+        .connect(node)
+        .await;
     println!("host {:?}", &node);
     match session {
         Ok(session) => {
-            let output = session.command("sudo")
-            .arg("docker")
-            .arg("exec")
-            .arg(container)
-            .arg(command).output().await?;
-            println!("stdout: {}\n\n\n\nstderr: {}", String::from(from_utf8(&output.stdout)?), String::from(from_utf8(&output.stderr)?));
-        },
+            let output = session
+                .command("sudo")
+                .arg("docker")
+                .arg("exec")
+                .arg(container)
+                .arg(command)
+                .output()
+                .await?;
+            println!(
+                "stdout: {}\n\n\n\nstderr: {}",
+                String::from(from_utf8(&output.stdout)?),
+                String::from(from_utf8(&output.stderr)?)
+            );
+        }
         Err(_) => {
             println!("Could not connect to {}", &node);
         }
