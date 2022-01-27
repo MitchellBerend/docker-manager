@@ -11,7 +11,11 @@ const CONCURRENT_REQUESTS: usize = 10;
 #[derive(clap::Subcommand)]
 pub enum DockerCommand {
     /// This will show a list of all containers and what node it is on.
-    Ps,
+    Ps {
+        /// The regex pattern that will be used to match entries from the config.
+        #[clap(short, long, default_value = ".*")]
+        regex: String,
+    },
 
     /// This will execute a command on the specified docker container,
     /// no flags will be present for now. This will not support interactive
@@ -85,9 +89,6 @@ pub struct MainParser {
     /// The docker cli command to be executed.
     #[clap(subcommand)]
     pub command: DockerCommand,
-
-    #[clap(short, long, default_value = ".*")]
-    pub regex: String,
 }
 
 impl MainParser {

@@ -29,24 +29,27 @@ mod parser;
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = parser::MainParser::parse();
 
-    let mut config_buf: Vec<u8> = vec![];
-    let mut _path = std::env::var("HOME")?;
-    _path.push_str("/.ssh/config");
-    let mut ssh_conf_file = std::fs::File::open(_path)?;
-
-    ssh_conf_file.read_to_end(&mut config_buf)?;
-    let config_str: String = String::from(from_utf8(&config_buf)?);
-
-    let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &args.regex))?;
-    let regex_iter = hostname_regex.find_iter(&config_str);
-
-    // explicit drop block since these are not needed anymore
-    {
-        drop(ssh_conf_file);
-    }
 
     match args.command {
-        parser::DockerCommand::Ps => {
+        parser::DockerCommand::Ps {
+            ref regex,
+        } => {
+            let mut _regex: String = regex.clone();
+            let mut config_buf: Vec<u8> = vec![];
+            let mut _path = std::env::var("HOME")?;
+            _path.push_str("/.ssh/config");
+            let mut ssh_conf_file = std::fs::File::open(_path)?;
+
+            ssh_conf_file.read_to_end(&mut config_buf)?;
+            let config_str: String = String::from(from_utf8(&config_buf)?);
+
+            let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &_regex))?;
+            let regex_iter = hostname_regex.find_iter(&config_str);
+
+            // explicit drop block since these are not needed anymore
+            {
+                drop(ssh_conf_file);
+            }
             let mut nodes: Vec<String> = vec![];
             for host in regex_iter {
                 nodes.push(String::from(host.as_str().split_once(" ").unwrap().1));
