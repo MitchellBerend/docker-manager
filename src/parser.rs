@@ -47,8 +47,11 @@ pub enum DockerCommand {
         image: String,
 
         /// The name of the container
-        #[clap(short = 'n', long, required = false)]
+        #[clap(short = 'n', long, required = false, default_value = "")]
         name: String,
+
+        #[clap(short = 'r', long, required = false, default_value = "always")]
+        restart: String,
 
         /// The port map of the container
         #[clap(
@@ -59,6 +62,16 @@ pub enum DockerCommand {
             default_value = ""
         )]
         port: String,
+
+        /// Environment variables that need to be passed in.
+        #[clap(
+            short,
+            long,
+            multiple_occurrences = true,
+            value_delimiter = ',',
+            default_value = ""
+        )]
+        env: Vec<String>,
     },
 }
 
@@ -197,4 +210,74 @@ impl MainParser {
         }
         Ok(())
     }
+
+    pub async fn send_run_command(&self) -> Result<(), Box<dyn Error>> {
+        let mut _node: String = String::new();
+        let mut _image: String = String::new();
+        let mut _name: String = String::new();
+        let mut _port: String = String::new();
+        let mut _restart: String = String::new();
+        let mut _env: Vec<String> = vec!();
+        match &self.command {
+            DockerCommand::Run {
+                node,
+                image,
+                name,
+                port,
+                restart,
+                env,
+            } => {
+                _node = node.clone();
+                _image = image.clone();
+                _name = name.clone();
+                _port = port.clone();
+                _restart = restart.clone();
+                _env = env.clone();
+            }
+            _ => panic!("error in send_log_command"),
+        };
+        let session = openssh::SessionBuilder::default()
+            .connect_timeout(std::time::Duration::new(1, 0))
+            .connect(&_node)
+            .await;
+        println!("host {:?}", &_node);
+        match session {
+            Ok(session) => {
+                let mut output = session.command("sudo");
+                let _ = &output.arg("docker")
+                    .arg("run")
+                    .arg("-d");
+                    // working vvvv
+                    if !&_port.is_empty() {
+                        let _ = &output.arg("-p");
+                        let _ = &output.arg(format!("{}", &_port));
+                    }
+                    if !&_name.is_empty() {
+                        let _ = &output.arg("--name");
+                        let _ = &output.arg(&_name);
+                    }
+                    if !&_restart.is_empty() {
+                        let _ = &output.arg("--restart");
+                        let _ = &output.arg(&_restart);
+                    }
+                    if !&_env.is_empty() {
+                        for item in &_env {
+                            let _ = &output.arg("-e");
+                            let _ = &output.arg(item);
+                        }
+                    }
+                    let shell = output.arg(&_image).output().await?;
+                println!(
+                    "stdout: {}\n\n\n\nstderr: {}",
+                    String::from(from_utf8(&shell.stdout)?),
+                    String::from(from_utf8(&shell.stderr)?)
+                );
+            }
+            Err(_) => {
+                println!("Could not connect to {}", &_node);
+            }
+        }
+        Ok(())
+    }
+
 }

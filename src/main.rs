@@ -66,8 +66,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             image: _,
             name: _,
             port: _,
+            restart: _,
+            env: _,
         } => {
-            println!("docker run");
+            args.send_run_command().await?;
         }
     }
 
