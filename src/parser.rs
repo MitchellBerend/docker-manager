@@ -262,8 +262,12 @@ impl MainParser {
                     }
                     if !&_env.is_empty() {
                         for item in &_env {
-                            let _ = &output.arg("-e");
-                            let _ = &output.arg(item);
+                            // The default is a vector with an empty string
+                            // so this needs to also be checked.
+                            if !item.is_empty() {
+                                let _ = &output.arg("-e");
+                                let _ = &output.arg(item);
+                            }
                         }
                     }
                     let shell = output.arg(&_image).output().await?;
@@ -279,5 +283,4 @@ impl MainParser {
         }
         Ok(())
     }
-
 }
