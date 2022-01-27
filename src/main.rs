@@ -11,9 +11,9 @@
 //      This will restart a specific docker container
 // run (done)
 //      This will start a new container with the specified flags
-// stop
+// stop (done)
 //      This will stop a specified container on a specified node
-// rm
+// rm (done)
 //      This will remove a specified container on a specified node
 //
 // TODO 
@@ -66,6 +66,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         parser::DockerCommand::Run { node: _, image: _, name: _, port: _, restart: _, env: _ } => {
             args.send_run_command().await?;
+        }
+        parser::DockerCommand::Stop { node: _, container: _ } => {
+            args.send_stop_command().await?;
+        }
+        parser::DockerCommand::Rm { node: _, container: _ } => {
+            args.send_rm_command().await?;
         }
     }
 
