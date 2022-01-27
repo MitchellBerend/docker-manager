@@ -31,8 +31,10 @@ pub enum DockerCommand {
     /// This will fetch logs from specified docker containers.
     Logs {
         /// The node the container is on.
+        #[clap(index(1))]
         node: String,
         /// The container id or name.
+        #[clap(index(2))]
         container: String,
     },
 
