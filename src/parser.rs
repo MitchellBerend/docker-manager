@@ -6,9 +6,7 @@ use std::str::from_utf8;
 use clap::Parser;
 use futures::{stream, StreamExt};
 
-
 const CONCURRENT_REQUESTS: usize = 10;
-
 
 #[derive(clap::Subcommand)]
 pub enum DockerCommand {
@@ -61,7 +59,7 @@ pub enum DockerCommand {
             default_value = ""
         )]
         port: String,
-    }
+    },
 }
 
 #[derive(Parser)]
@@ -78,8 +76,6 @@ pub struct MainParser {
     #[clap(short, long, default_value = ".*")]
     pub regex: String,
 }
-
-
 
 impl MainParser {
     pub async fn send_ps_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
@@ -116,23 +112,33 @@ impl MainParser {
                 println!("{}", body);
             })
             .await;
-    
+
         Ok(())
     }
-    
-    pub async fn send_log_command(&self, node: &str, container: &str) -> Result<(), Box<dyn Error>> {
+
+    pub async fn send_log_command(&self) -> Result<(), Box<dyn Error>> {
+        let mut _node: String = String::new();
+        let mut _container: String = String::new();
+        match &self.command {
+            DockerCommand::Logs { node, container } => {
+                _node = node.clone();
+                _container = container.clone();
+            }
+            _ => panic!("error in send_log_command"),
+        };
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::from_secs(1))
-            .connect(node)
+            .connect(&_node)
             .await;
-        println!("host {:?}", &node);
+        println!("host {:?}", &_node);
+
         match session {
             Ok(session) => {
                 let output = session
                     .command("sudo")
                     .arg("docker")
                     .arg("logs")
-                    .arg(container)
+                    .arg(_container)
                     .output()
                     .await?;
                 println!(
@@ -142,31 +148,41 @@ impl MainParser {
                 );
             }
             Err(_) => {
-                println!("Could not connect to {}", &node);
+                println!("Could not connect to {}", &_node);
             }
         }
         Ok(())
     }
-    
-    pub async fn send_exec_command(
-        &self,
-        node: &str,
-        container: &str,
-        command: &str,
-    ) -> Result<(), Box<dyn Error>> {
+
+    pub async fn send_exec_command(&self) -> Result<(), Box<dyn Error>> {
+        let mut _node: String = String::new();
+        let mut _container: String = String::new();
+        let mut _command: String = String::new();
+        match &self.command {
+            DockerCommand::Exec {
+                node,
+                container,
+                command,
+            } => {
+                _node = node.clone();
+                _container = container.clone();
+                _command = command.clone();
+            }
+            _ => panic!("error in send_log_command"),
+        };
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
-            .connect(node)
+            .connect(&_node)
             .await;
-        println!("host {:?}", &node);
+        println!("host {:?}", &_node);
         match session {
             Ok(session) => {
                 let output = session
                     .command("sudo")
                     .arg("docker")
                     .arg("exec")
-                    .arg(container)
-                    .arg(command)
+                    .arg(&_container)
+                    .arg(&_command)
                     .output()
                     .await?;
                 println!(
@@ -176,10 +192,9 @@ impl MainParser {
                 );
             }
             Err(_) => {
-                println!("Could not connect to {}", &node);
+                println!("Could not connect to {}", &_node);
             }
         }
         Ok(())
     }
-    
 }

@@ -20,7 +20,6 @@ use clap::Parser;
 
 mod parser;
 
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = parser::MainParser::parse();
@@ -48,20 +47,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 nodes.push(String::from(host.as_str().split_once(" ").unwrap().1));
             }
             args.send_ps_command(&nodes).await?;
-        },
+        }
         parser::DockerCommand::Exec {
-            ref node,
-            ref container,
-            ref command,
+            node: _,
+            container: _,
+            command: _,
         } => {
-            args.send_exec_command(node, container, command).await?;
-        },
-        parser::DockerCommand::Logs { ref node, ref container } => {
-            args.send_log_command(&node, &container).await?;
-        },
-        parser::DockerCommand::Run { node: _, image: _, name: _, port:_ } => {
+            args.send_exec_command().await?;
+        }
+        parser::DockerCommand::Logs {
+            node: _,
+            container: _,
+        } => {
+            args.send_log_command().await?;
+        }
+        parser::DockerCommand::Run {
+            node: _,
+            image: _,
+            name: _,
+            port: _,
+        } => {
             println!("docker run");
-        },
+        }
     }
 
     Ok(())
