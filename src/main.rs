@@ -7,10 +7,15 @@
 //      no flags will be present for now
 // logs (done)
 //      This will fetch the logs of specified docker containers
-// restart
+// restart (done)
 //      This will restart a specific docker container
-// run
+// run (done)
 //      This will start a new container with the specified flags
+// stop
+//      This will stop a specified container on a specified node
+// rm
+//      This will remove a specified container on a specified node
+
 
 use std::error::Error;
 use std::io::Read;
