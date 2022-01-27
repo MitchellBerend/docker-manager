@@ -15,6 +15,10 @@
 //      This will stop a specified container on a specified node
 // rm
 //      This will remove a specified container on a specified node
+//
+// TODO 
+// Add proper debug logging
+// use log crate 
 
 
 use std::error::Error;
@@ -31,9 +35,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 
     match args.command {
-        parser::DockerCommand::Ps {
-            ref regex,
-        } => {
+        parser::DockerCommand::Ps {ref regex} => {
             let mut _regex: String = regex.clone();
             let mut config_buf: Vec<u8> = vec![];
             let mut _path = std::env::var("HOME")?;
@@ -56,27 +58,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
             args.send_ps_command(&nodes).await?;
         }
-        parser::DockerCommand::Exec {
-            node: _,
-            container: _,
-            command: _,
-        } => {
+        parser::DockerCommand::Exec { node: _, container: _, command: _ } => {
             args.send_exec_command().await?;
         }
-        parser::DockerCommand::Logs {
-            node: _,
-            container: _,
-        } => {
+        parser::DockerCommand::Logs { node: _, container: _ } => {
             args.send_log_command().await?;
         }
-        parser::DockerCommand::Run {
-            node: _,
-            image: _,
-            name: _,
-            port: _,
-            restart: _,
-            env: _,
-        } => {
+        parser::DockerCommand::Run { node: _, image: _, name: _, port: _, restart: _, env: _ } => {
             args.send_run_command().await?;
         }
     }
