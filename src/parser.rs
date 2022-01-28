@@ -91,20 +91,20 @@ pub enum DockerCommand {
     /// This will stop a specified container on a specified node.
     Stop {
         /// The node the container is on.
-        #[clap(index(1))]
+        #[clap(index(2))]
         node: String,
         /// The container id or name.
-        #[clap(index(2))]
+        #[clap(index(1))]
         container: String,
     },
 
     /// This will remove a specified stopped container on a specified node.
     Rm {
         /// The node the container is on.
-        #[clap(index(1))]
+        #[clap(index(2))]
         node: String,
         /// The container id or name.
-        #[clap(index(2))]
+        #[clap(index(1))]
         container: String,
     },
 }
