@@ -26,12 +26,34 @@ use std::io::Read;
 use std::str::from_utf8;
 
 use clap::Parser;
+use log::{LevelFilter};
 
+mod logger;
 mod parser;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = parser::MainParser::parse();
+    
+    match args.level {
+        parser::Level::Debug => { 
+            log::set_logger(&logger::MY_LOGGER).unwrap();
+            log::set_max_level(LevelFilter::Debug);
+        },
+        parser::Level::Info => {
+            log::set_logger(&logger::MY_LOGGER).unwrap();
+            log::set_max_level(LevelFilter::Info);
+        }
+        parser::Level::Warning => {
+            log::set_logger(&logger::MY_LOGGER).unwrap();
+            log::set_max_level(LevelFilter::Warn);
+        },
+        parser::Level::Error => {
+            log::set_logger(&logger::MY_LOGGER).unwrap();
+            log::set_max_level(LevelFilter::Error); 
+        },
+    }
+
 
 
     match args.command {

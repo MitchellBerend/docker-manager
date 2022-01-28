@@ -5,8 +5,18 @@ use std::str::from_utf8;
 
 use clap::Parser;
 use futures::{stream, StreamExt};
-
+use log::{debug};
 const CONCURRENT_REQUESTS: usize = 10;
+
+
+#[derive(clap::ArgEnum, Clone)]
+pub enum Level {
+    Debug,
+    Info,
+    Warning,
+    Error,
+}
+
 
 #[derive(clap::Subcommand)]
 pub enum DockerCommand {
@@ -33,10 +43,10 @@ pub enum DockerCommand {
     /// This will fetch logs from specified docker containers.
     Logs {
         /// The node the container is on.
-        #[clap(index(1))]
+        #[clap(index(2))]
         node: String,
         /// The container id or name.
-        #[clap(index(2))]
+        #[clap(index(1))]
         container: String,
     },
 
@@ -44,10 +54,10 @@ pub enum DockerCommand {
     /// target node.
     Run {
         /// The node the container is on.
-        #[clap(index(2))]
+        #[clap(index(1))]
         node: String,
         /// The image that needs to be run
-        #[clap(index(1))]
+        #[clap(index(2))]
         image: String,
 
         /// The name of the container
@@ -109,10 +119,16 @@ pub struct MainParser {
     /// The docker cli command to be executed.
     #[clap(subcommand)]
     pub command: DockerCommand,
+
+    /// Setting information output level.
+    #[clap(arg_enum, short = 'l', default_value = "info")]
+    pub level: Level,
 }
+
 
 impl MainParser {
     pub async fn send_ps_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
+        debug!("searching nodes: {:?}", &nodes);
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
                 let mut return_str = String::new();
@@ -158,8 +174,13 @@ impl MainParser {
                 _node = node.clone();
                 _container = container.clone();
             }
-            _ => panic!("error in send_log_command"),
+            _ => {
+                // debug!("send_log_command was called with {:?}", &self.command);
+                panic!("error in send_log_command")
+                // replace with proper error log and return Ok(())
+            },
         };
+        debug!("_node: {}, _container: {}", &_node, &_container);
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::from_secs(1))
             .connect(&_node)
@@ -202,8 +223,12 @@ impl MainParser {
                 _container = container.clone();
                 _command = command.clone();
             }
-            _ => panic!("error in send_log_command"),
+            _ => {
+                panic!("error in send_log_command")
+                // replace with proper error log and return Ok(())
+            },
         };
+        debug!("_node: {}, _container: {}, _command: {}", &_node, &_container, &_command);
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
             .connect(&_node)
@@ -255,8 +280,12 @@ impl MainParser {
                 _restart = restart.clone();
                 _env = env.clone();
             }
-            _ => panic!("error in send_log_command"),
+            _ => {
+                panic!("error in send_log_command")
+                // replace with proper error log and return Ok(())
+            },
         };
+        debug!("_node: {}, _image: {}", &_node, &_image);
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
             .connect(&_node)
@@ -313,8 +342,12 @@ impl MainParser {
                 _node = node.clone();
                 _container = container.clone();
             }
-            _ => panic!("error in send_log_command"),
+            _ => {
+                panic!("error in send_stop_command")
+                // replace with proper error log and return Ok(())
+            },
         };
+        debug!("_node: {}, _container: {}", &_node, &_container);
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::from_secs(1))
             .connect(&_node)
@@ -351,8 +384,12 @@ impl MainParser {
                 _node = node.clone();
                 _container = container.clone();
             }
-            _ => panic!("error in send_log_command"),
+            _ => {
+                panic!("error in send_rm_command")
+                // replace with proper error log and return Ok(())
+            },
         };
+        debug!("_node: {}, _container: {}", &_node, &_container);
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::from_secs(1))
             .connect(&_node)
