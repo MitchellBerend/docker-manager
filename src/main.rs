@@ -34,27 +34,22 @@ mod parser;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = parser::MainParser::parse();
-    
+    log::set_logger(&logger::MY_LOGGER).unwrap();
+
     match args.level {
         parser::Level::Debug => { 
-            log::set_logger(&logger::MY_LOGGER).unwrap();
             log::set_max_level(LevelFilter::Debug);
         },
         parser::Level::Info => {
-            log::set_logger(&logger::MY_LOGGER).unwrap();
             log::set_max_level(LevelFilter::Info);
         }
         parser::Level::Warning => {
-            log::set_logger(&logger::MY_LOGGER).unwrap();
             log::set_max_level(LevelFilter::Warn);
         },
         parser::Level::Error => {
-            log::set_logger(&logger::MY_LOGGER).unwrap();
             log::set_max_level(LevelFilter::Error); 
         },
     }
-
-
 
     match args.command {
         parser::DockerCommand::Ps {ref regex} => {
