@@ -300,7 +300,7 @@ impl MainParser {
                     // working vvvv
                     if !&_port.is_empty() {
                         let _ = &output.arg("-p");
-                        let _ = &output.arg(format!("{}", &_port));
+                        let _ = &output.arg((&_port).to_string());
                     }
                     if !&_name.is_empty() {
                         let _ = &output.arg("--name");

@@ -17,8 +17,7 @@
 //      This will remove a specified container on a specified node
 //
 // TODO 
-// Add proper debug logging
-// use log crate 
+// Add proper debug logging (done)
 
 
 use std::error::Error;
