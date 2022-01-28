@@ -6,7 +6,7 @@ use std::str::from_utf8;
 use clap::Parser;
 use futures::{stream, StreamExt};
 use log::{debug};
-use crate::subcommand::DockerCommand;
+use crate::dockercommand::DockerCommand;
 
 
 const CONCURRENT_REQUESTS: usize = 10;
@@ -369,6 +369,45 @@ impl MainParser {
                 println!("Could not connect to {}", &_node);
             }
         }
+        Ok(())
+    }
+
+    pub async fn send_image_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
+        debug!("searching nodes: {:?}", &nodes);
+        let _bodies = stream::iter(nodes)
+            .map(|node| async move {
+                let mut return_str = String::new();
+                let owned_node = node.clone();
+                let session = openssh::SessionBuilder::default()
+                    .connect_timeout(std::time::Duration::new(1, 0))
+                    .connect(&owned_node)
+                    .await;
+                return_str.push_str(&format!("host {:?}\n", &owned_node));
+                match session {
+                    Ok(session) => {
+                        let output = session
+                            .command("sudo")
+                            .arg("docker")
+                            .arg("image")
+                            .arg("ls")
+                            .output()
+                            .await
+                            .unwrap();
+                        return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
+                    }
+                    Err(_) => {
+                        return_str.push_str(&format!("Could not connect to {}", &owned_node));
+                    }
+                }
+                return_str
+            })
+            .buffer_unordered(CONCURRENT_REQUESTS);
+        _bodies
+            .for_each(|body| async move {
+                println!("{}", body);
+            })
+            .await;
+
         Ok(())
     }
 }

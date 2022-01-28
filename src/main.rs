@@ -26,10 +26,11 @@ use std::str::from_utf8;
 
 use clap::Parser;
 use log::{LevelFilter};
+use dockercommand::DockerCommand;
 
 mod logger;
 mod parser;
-mod subcommand;
+mod dockercommand;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -52,7 +53,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     match args.command {
-        subcommand::DockerCommand::Ps {ref regex} => {
+        DockerCommand::Ps {ref regex} => {
             let mut _regex: String = regex.clone();
             let mut config_buf: Vec<u8> = vec![];
             let mut _path = std::env::var("HOME")?;
@@ -75,23 +76,46 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
             args.send_ps_command(&nodes).await?;
         }
-        subcommand::DockerCommand::Exec { node: _, container: _, command: _ } => {
+        DockerCommand::Exec { node: _, container: _, command: _ } => {
             args.send_exec_command().await?;
         }
-        subcommand::DockerCommand::Logs { node: _, container: _ } => {
+        DockerCommand::Logs { node: _, container: _ } => {
             args.send_log_command().await?;
         }
-        subcommand::DockerCommand::Run { node: _, image: _, name: _, port: _, restart: _, env: _ } => {
+        DockerCommand::Run { node: _, image: _, name: _, port: _, restart: _, env: _ } => {
             args.send_run_command().await?;
         }
-        subcommand::DockerCommand::Stop { node: _, container: _ } => {
+        DockerCommand::Stop { node: _, container: _ } => {
             args.send_stop_command().await?;
         }
-        subcommand::DockerCommand::Rm { node: _, container: _ } => {
+        DockerCommand::Rm { node: _, container: _ } => {
             args.send_rm_command().await?;
         }
-        subcommand::DockerCommand::Inspect { node: _, container: _ } => {
+        DockerCommand::Inspect { node: _, container: _ } => {
             args.send_inspect_command().await?;
+        }
+        DockerCommand::Image { ref regex} => {
+            let mut _regex: String = regex.clone();
+            let mut config_buf: Vec<u8> = vec![];
+            let mut _path = std::env::var("HOME")?;
+            _path.push_str("/.ssh/config");
+            let mut ssh_conf_file = std::fs::File::open(_path)?;
+
+            ssh_conf_file.read_to_end(&mut config_buf)?;
+            let config_str: String = String::from(from_utf8(&config_buf)?);
+
+            let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &_regex))?;
+            let regex_iter = hostname_regex.find_iter(&config_str);
+
+            // explicit drop block since these are not needed anymore
+            {
+                drop(ssh_conf_file);
+            }
+            let mut nodes: Vec<String> = vec![];
+            for host in regex_iter {
+                nodes.push(String::from(host.as_str().split_once(" ").unwrap().1));
+            }
+            args.send_image_command(&nodes).await?;
         }
     }
 

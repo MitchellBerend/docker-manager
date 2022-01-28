@@ -1,3 +1,5 @@
+
+
 #[derive(clap::Subcommand)]
 pub enum DockerCommand {
     /// Shows a list of all containers and what node it is on.
@@ -96,4 +98,11 @@ pub enum DockerCommand {
         #[clap(index(1))]
         container: String,
     },
+
+    /// Shows all current images on matched nodes.
+    Image {
+        /// The regex pattern that will be used to match entries from the config.
+        #[clap(short, long, default_value = ".*")]
+        regex: String,
+    }
 }
