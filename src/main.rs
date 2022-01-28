@@ -89,6 +89,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         parser::DockerCommand::Rm { node: _, container: _ } => {
             args.send_rm_command().await?;
         }
+        parser::DockerCommand::Inspect { node: _, container: _ } => {
+            args.send_inspect_command().await?;
+        }
     }
 
     Ok(())
