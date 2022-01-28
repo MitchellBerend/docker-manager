@@ -29,6 +29,7 @@ use log::{LevelFilter};
 
 mod logger;
 mod parser;
+mod subcommand;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -51,7 +52,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     match args.command {
-        parser::DockerCommand::Ps {ref regex} => {
+        subcommand::DockerCommand::Ps {ref regex} => {
             let mut _regex: String = regex.clone();
             let mut config_buf: Vec<u8> = vec![];
             let mut _path = std::env::var("HOME")?;
@@ -74,22 +75,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
             args.send_ps_command(&nodes).await?;
         }
-        parser::DockerCommand::Exec { node: _, container: _, command: _ } => {
+        subcommand::DockerCommand::Exec { node: _, container: _, command: _ } => {
             args.send_exec_command().await?;
         }
-        parser::DockerCommand::Logs { node: _, container: _ } => {
+        subcommand::DockerCommand::Logs { node: _, container: _ } => {
             args.send_log_command().await?;
         }
-        parser::DockerCommand::Run { node: _, image: _, name: _, port: _, restart: _, env: _ } => {
+        subcommand::DockerCommand::Run { node: _, image: _, name: _, port: _, restart: _, env: _ } => {
             args.send_run_command().await?;
         }
-        parser::DockerCommand::Stop { node: _, container: _ } => {
+        subcommand::DockerCommand::Stop { node: _, container: _ } => {
             args.send_stop_command().await?;
         }
-        parser::DockerCommand::Rm { node: _, container: _ } => {
+        subcommand::DockerCommand::Rm { node: _, container: _ } => {
             args.send_rm_command().await?;
         }
-        parser::DockerCommand::Inspect { node: _, container: _ } => {
+        subcommand::DockerCommand::Inspect { node: _, container: _ } => {
             args.send_inspect_command().await?;
         }
     }
