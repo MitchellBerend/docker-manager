@@ -1,3 +1,6 @@
+// This module defines all helper functions for the main program
+
+
 use std::io::Read;
 use std::str::from_utf8;
 use std::error::Error;

@@ -1,4 +1,4 @@
-// This module defines the main cli and all its arguments
+// This module defines the main cli
 
 use std::error::Error;
 use std::str::from_utf8;
@@ -74,7 +74,6 @@ impl MainParser {
                 println!("{}", body);
             })
             .await;
-
         Ok(())
     }
 
@@ -444,6 +443,47 @@ impl MainParser {
                 println!("{}", body);
             })
             .await;
+        Ok(())
+    }
+
+    pub async fn send_top_command(&self) -> Result<(), Box<dyn Error>> {
+        let mut _node: String = String::new();
+        let mut _container: String = String::new();
+        match &self.command {
+            DockerCommand::Top { node, container } => {
+                _node = node.clone();
+                _container = container.clone();
+            }
+            _ => {
+                panic!("error in send_top_command")
+            },
+        };
+        debug!("_node: {}, _container: {}", &_node, &_container);
+        let session = openssh::SessionBuilder::default()
+            .connect_timeout(std::time::Duration::from_secs(1))
+            .connect(&_node)
+            .await;
+        println!("host {:?}", &_node);
+
+        match session {
+            Ok(session) => {
+                let output = session
+                    .command("sudo")
+                    .arg("docker")
+                    .arg("top")
+                    .arg(_container)
+                    .output()
+                    .await?;
+                println!(
+                    "stdout: {}\n\n\n\nstderr: {}",
+                    String::from(from_utf8(&output.stdout)?),
+                    String::from(from_utf8(&output.stderr)?)
+                );
+            }
+            Err(_) => {
+                println!("Could not connect to {}", &_node);
+            }
+        }
         Ok(())
     }
 }

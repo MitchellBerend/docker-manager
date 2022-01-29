@@ -19,6 +19,7 @@
 //      This will show all images on a node
 // info (done)
 //      This will show docker info of all nodes
+
 // TODO 
 // Add proper debug logging (done)
 
@@ -85,6 +86,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         DockerCommand::Info { ref regex } => {
             let nodes = functions::get_nodes(regex.clone())?;
             args.send_info_command(&nodes).await?;
+        }
+        DockerCommand::Top { node: _, container: _ } => {
+            args.send_top_command().await?;
         }
     }
     Ok(())

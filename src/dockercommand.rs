@@ -1,4 +1,4 @@
-
+/// This module defines all subcommands
 
 #[derive(clap::Subcommand)]
 pub enum DockerCommand {
@@ -111,5 +111,15 @@ pub enum DockerCommand {
         /// The regex pattern that will be used to match entries from the config.
         #[clap(short, long, default_value = ".*")]
         regex: String,
+    },
+
+    /// Gets low level information of  container on a specified node.
+    Top {
+        /// The node the container is on.
+        #[clap(index(2))]
+        node: String,
+        /// The container id or name.
+        #[clap(index(1))]
+        container: String,
     },
 }
