@@ -5,7 +5,7 @@ use std::io::Read;
 use std::str::from_utf8;
 use std::error::Error;
 
-use log::debug;
+use log::{info, debug};
 
 
 pub fn get_nodes(regex: String) -> Result<Vec<String>, Box<dyn Error>> {
@@ -27,7 +27,7 @@ pub fn get_nodes(regex: String) -> Result<Vec<String>, Box<dyn Error>> {
 }
 
 pub async fn send_command_node_container(command: String, node: String, container: String) -> Result<(), Box<dyn Error>> {
-    debug!("node: {}, container: {}", &node, &container);
+    info!("node: {}, container: {}", &node, &container);
     debug!("running docker {}", &command);
     debug!("connecting to {}", &node);
     let session = openssh::SessionBuilder::default()

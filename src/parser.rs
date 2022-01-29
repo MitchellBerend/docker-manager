@@ -5,7 +5,7 @@ use std::str::from_utf8;
 
 use clap::Parser;
 use futures::{stream, StreamExt};
-use log::{debug, error};
+use log::{info, debug, error};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 
 
@@ -33,14 +33,14 @@ pub struct MainParser {
     pub command: DockerCommand,
 
     /// Setting information output level.
-    #[clap(arg_enum, short = 'l', default_value = "info")]
+    #[clap(arg_enum, short = 'l', default_value = "warning")]
     pub level: Level,
 }
 
 
 impl MainParser {
     pub async fn send_ps_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
-        debug!("searching nodes: {:?}", &nodes);
+        info!("searching nodes: {:?}", &nodes);
         debug!("running docker ps");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
@@ -53,7 +53,7 @@ impl MainParser {
                 return_str.push_str(&format!("host {:?}\n", &node));
                 match session {
                     Ok(session) => {
-                        debug!("running command docker ps on {}", &node);
+                        info!("running command docker ps on {}", &node);
                         let output = session
                             .command("sudo")
                             .arg("docker")
@@ -126,7 +126,7 @@ impl MainParser {
         println!("host {:?}", &_node);
         match session {
             Ok(session) => {
-                debug!("running command docker exec on {}", &_container);
+                info!("running command docker exec on {}", &_container);
                 let output = session
                     .command("sudo")
                     .arg("docker")
@@ -185,7 +185,7 @@ impl MainParser {
         println!("host {:?}", &_node);
         match session {
             Ok(session) => {
-                debug!("running command docker run on {}", &_node);
+                info!("running command docker run on {}", &_node);
                 let mut output = session.command("sudo");
                 let _ = &output.arg("docker")
                     .arg("run")
@@ -281,7 +281,7 @@ impl MainParser {
     }
 
     pub async fn send_image_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
-        debug!("searching nodes: {:?}", &nodes);
+        info!("searching nodes: {:?}", &nodes);
         debug!("running docker image ls");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
@@ -295,7 +295,7 @@ impl MainParser {
                 return_str.push_str(&format!("host {:?}\n", &owned_node));
                 match session {
                     Ok(session) => {
-                        debug!("running command docker image ls on {}", &node);
+                        info!("running command docker image ls on {}", &node);
                         let output = session
                             .command("sudo")
                             .arg("docker")
@@ -322,7 +322,7 @@ impl MainParser {
     }
 
     pub async fn send_info_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
-        debug!("searching nodes: {:?}", &nodes);
+        info!("searching nodes: {:?}", &nodes);
         debug!("running docker info");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
@@ -336,7 +336,7 @@ impl MainParser {
                 return_str.push_str(&format!("host {:?}\n", &owned_node));
                 match session {
                     Ok(session) => {
-                        debug!("running command docker info on {}", &node);
+                        info!("running command docker info on {}", &node);
                         let output = session
                             .command("sudo")
                             .arg("docker")
