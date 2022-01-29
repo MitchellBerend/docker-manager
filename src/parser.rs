@@ -6,7 +6,7 @@ use std::str::from_utf8;
 use clap::Parser;
 use futures::{stream, StreamExt};
 use log::{debug};
-use crate::dockercommand::DockerCommand;
+use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 
 
 const CONCURRENT_REQUESTS: usize = 10;
@@ -78,45 +78,19 @@ impl MainParser {
     }
 
     pub async fn send_log_command(&self) -> Result<(), Box<dyn Error>> {
-        let mut _node: String = String::new();
-        let mut _container: String = String::new();
         match &self.command {
             DockerCommand::Logs { node, container } => {
-                _node = node.clone();
-                _container = container.clone();
+                debug!("node: {}, container: {}", &node, &container);
+                send_command_node_container(
+                    "logs".to_string(),
+                    node.clone(),
+                    container.clone(),
+                ).await?
             }
             _ => {
-                // debug!("send_log_command was called with {:?}", &self.command);
                 panic!("error in send_log_command")
-                // replace with proper error log and return Ok(())
             },
         };
-        debug!("_node: {}, _container: {}", &_node, &_container);
-        let session = openssh::SessionBuilder::default()
-            .connect_timeout(std::time::Duration::from_secs(1))
-            .connect(&_node)
-            .await;
-        println!("host {:?}", &_node);
-
-        match session {
-            Ok(session) => {
-                let output = session
-                    .command("sudo")
-                    .arg("docker")
-                    .arg("logs")
-                    .arg(_container)
-                    .output()
-                    .await?;
-                println!(
-                    "stdout: {}\n\n\n\nstderr: {}",
-                    String::from(from_utf8(&output.stdout)?),
-                    String::from(from_utf8(&output.stderr)?)
-                );
-            }
-            Err(_) => {
-                println!("Could not connect to {}", &_node);
-            }
-        }
         Ok(())
     }
 
@@ -193,7 +167,6 @@ impl MainParser {
             }
             _ => {
                 panic!("error in send_log_command")
-                // replace with proper error log and return Ok(())
             },
         };
         debug!("_node: {}, _image: {}", &_node, &_image);
@@ -246,128 +219,53 @@ impl MainParser {
     }
 
     pub async fn send_stop_command(&self) -> Result<(), Box<dyn Error>> {
-        let mut _node: String = String::new();
-        let mut _container: String = String::new();
         match &self.command {
             DockerCommand::Stop { node, container } => {
-                _node = node.clone();
-                _container = container.clone();
+                debug!("node: {}, container: {}", &node, &container);
+                send_command_node_container(
+                    "stop".to_string(),
+                    node.clone(),
+                    container.clone(),
+                ).await?
             }
             _ => {
                 panic!("error in send_stop_command")
-                // replace with proper error log and return Ok(())
             },
         };
-        debug!("_node: {}, _container: {}", &_node, &_container);
-        let session = openssh::SessionBuilder::default()
-            .connect_timeout(std::time::Duration::from_secs(1))
-            .connect(&_node)
-            .await;
-        println!("host {:?}", &_node);
-
-        match session {
-            Ok(session) => {
-                let output = session
-                    .command("sudo")
-                    .arg("docker")
-                    .arg("stop")
-                    .arg(_container)
-                    .output()
-                    .await?;
-                println!(
-                    "stdout: {}\n\n\n\nstderr: {}",
-                    String::from(from_utf8(&output.stdout)?),
-                    String::from(from_utf8(&output.stderr)?)
-                );
-            }
-            Err(_) => {
-                println!("Could not connect to {}", &_node);
-            }
-        }
         Ok(())
     }
 
     pub async fn send_rm_command(&self) -> Result<(), Box<dyn Error>> {
-        let mut _node: String = String::new();
-        let mut _container: String = String::new();
         match &self.command {
             DockerCommand::Rm { node, container } => {
-                _node = node.clone();
-                _container = container.clone();
+                debug!("node: {}, container: {}", &node, &container);
+                send_command_node_container(
+                    "rm".to_string(),
+                    node.clone(),
+                    container.clone(),
+                ).await?
             }
             _ => {
                 panic!("error in send_rm_command")
-                // replace with proper error log and return Ok(())
             },
         };
-        debug!("_node: {}, _container: {}", &_node, &_container);
-        let session = openssh::SessionBuilder::default()
-            .connect_timeout(std::time::Duration::from_secs(1))
-            .connect(&_node)
-            .await;
-        println!("host {:?}", &_node);
-
-        match session {
-            Ok(session) => {
-                let output = session
-                    .command("sudo")
-                    .arg("docker")
-                    .arg("rm")
-                    .arg(_container)
-                    .output()
-                    .await?;
-                println!(
-                    "stdout: {}\n\n\n\nstderr: {}",
-                    String::from(from_utf8(&output.stdout)?),
-                    String::from(from_utf8(&output.stderr)?)
-                );
-            }
-            Err(_) => {
-                println!("Could not connect to {}", &_node);
-            }
-        }
         Ok(())
     }
 
     pub async fn send_inspect_command(&self) -> Result<(), Box<dyn Error>> {
-        let mut _node: String = String::new();
-        let mut _container: String = String::new();
         match &self.command {
             DockerCommand::Inspect { node, container } => {
-                _node = node.clone();
-                _container = container.clone();
+                debug!("node: {}, container: {}", &node, &container);
+                send_command_node_container(
+                    "inspect".to_string(),
+                    node.clone(),
+                    container.clone(),
+                ).await?
             }
             _ => {
                 panic!("error in send_inspect_command")
-                // replace with proper error log and return Ok(())
             },
         };
-        debug!("_node: {}, _container: {}", &_node, &_container);
-        let session = openssh::SessionBuilder::default()
-            .connect_timeout(std::time::Duration::from_secs(1))
-            .connect(&_node)
-            .await;
-        println!("host {:?}", &_node);
-
-        match session {
-            Ok(session) => {
-                let output = session
-                    .command("sudo")
-                    .arg("docker")
-                    .arg("inspect")
-                    .arg(_container)
-                    .output()
-                    .await?;
-                println!(
-                    "stdout: {}\n\n\n\nstderr: {}",
-                    String::from(from_utf8(&output.stdout)?),
-                    String::from(from_utf8(&output.stderr)?)
-                );
-            }
-            Err(_) => {
-                println!("Could not connect to {}", &_node);
-            }
-        }
         Ok(())
     }
 
@@ -447,43 +345,18 @@ impl MainParser {
     }
 
     pub async fn send_top_command(&self) -> Result<(), Box<dyn Error>> {
-        let mut _node: String = String::new();
-        let mut _container: String = String::new();
         match &self.command {
             DockerCommand::Top { node, container } => {
-                _node = node.clone();
-                _container = container.clone();
+                send_command_node_container(
+                    "top".to_string(),
+                    node.clone(),
+                    container.clone(),
+                ).await?
             }
             _ => {
                 panic!("error in send_top_command")
             },
         };
-        debug!("_node: {}, _container: {}", &_node, &_container);
-        let session = openssh::SessionBuilder::default()
-            .connect_timeout(std::time::Duration::from_secs(1))
-            .connect(&_node)
-            .await;
-        println!("host {:?}", &_node);
-
-        match session {
-            Ok(session) => {
-                let output = session
-                    .command("sudo")
-                    .arg("docker")
-                    .arg("top")
-                    .arg(_container)
-                    .output()
-                    .await?;
-                println!(
-                    "stdout: {}\n\n\n\nstderr: {}",
-                    String::from(from_utf8(&output.stdout)?),
-                    String::from(from_utf8(&output.stderr)?)
-                );
-            }
-            Err(_) => {
-                println!("Could not connect to {}", &_node);
-            }
-        }
         Ok(())
     }
 }
