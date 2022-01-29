@@ -5,7 +5,7 @@ use std::str::from_utf8;
 
 use clap::Parser;
 use futures::{stream, StreamExt};
-use log::{debug};
+use log::{debug, error};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 
 
@@ -90,6 +90,7 @@ impl MainParser {
                 ).await?
             }
             _ => {
+                error!("The send_log_command was somehow called with {:#?}", &self.command);
                 panic!("error in send_log_command")
             },
         };
@@ -112,6 +113,7 @@ impl MainParser {
                 _command = command.clone();
             }
             _ => {
+                error!("The send_log_command was somehow called with {:#?}", &self.command);
                 panic!("error in send_log_command")
                 // replace with proper error log and return Ok(())
             },
@@ -171,6 +173,7 @@ impl MainParser {
                 _env = env.clone();
             }
             _ => {
+                error!("The send_log_command was somehow called with {:#?}", &self.command);
                 panic!("error in send_log_command")
             },
         };
@@ -235,6 +238,7 @@ impl MainParser {
                 ).await?
             }
             _ => {
+                error!("The send_log_command was somehow called with {:#?}", &self.command);
                 panic!("error in send_stop_command")
             },
         };
@@ -252,6 +256,7 @@ impl MainParser {
                 ).await?
             }
             _ => {
+                error!("The send_log_command was somehow called with {:#?}", &self.command);
                 panic!("error in send_rm_command")
             },
         };
@@ -366,6 +371,7 @@ impl MainParser {
                 ).await?
             }
             _ => {
+                error!("The send_log_command was somehow called with {:#?}", &self.command);
                 panic!("error in send_top_command")
             },
         };

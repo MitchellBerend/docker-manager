@@ -1,6 +1,6 @@
 /// This module defines all subcommands
 
-#[derive(clap::Subcommand)]
+#[derive(clap::Subcommand, Debug)]
 pub enum DockerCommand {
     /// Shows a list of all containers and what node it is on.
     Ps {
