@@ -41,17 +41,19 @@ pub struct MainParser {
 impl MainParser {
     pub async fn send_ps_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
         debug!("searching nodes: {:?}", &nodes);
+        debug!("running docker ps");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
                 let mut return_str = String::new();
-                let owned_node = node.clone();
+                debug!("connecting to {}", &node);
                 let session = openssh::SessionBuilder::default()
                     .connect_timeout(std::time::Duration::new(1, 0))
-                    .connect(&owned_node)
+                    .connect(&node)
                     .await;
-                return_str.push_str(&format!("host {:?}\n", &owned_node));
+                return_str.push_str(&format!("host {:?}\n", &node));
                 match session {
                     Ok(session) => {
+                        debug!("running command docker ps on {}", &node);
                         let output = session
                             .command("sudo")
                             .arg("docker")
@@ -63,7 +65,7 @@ impl MainParser {
                         return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
                     }
                     Err(_) => {
-                        return_str.push_str(&format!("Could not connect to {}", &owned_node));
+                        return_str.push_str(&format!("Could not connect to {}", &node));
                     }
                 }
                 return_str
@@ -98,6 +100,7 @@ impl MainParser {
         let mut _node: String = String::new();
         let mut _container: String = String::new();
         let mut _command: String = String::new();
+        debug!("running docker exec on {}", &_container);
         match &self.command {
             DockerCommand::Exec {
                 node,
@@ -113,7 +116,7 @@ impl MainParser {
                 // replace with proper error log and return Ok(())
             },
         };
-        debug!("_node: {}, _container: {}, _command: {}", &_node, &_container, &_command);
+        debug!("connecting to {}", &_node);
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
             .connect(&_node)
@@ -121,6 +124,7 @@ impl MainParser {
         println!("host {:?}", &_node);
         match session {
             Ok(session) => {
+                debug!("running command docker exec on {}", &_container);
                 let output = session
                     .command("sudo")
                     .arg("docker")
@@ -149,6 +153,7 @@ impl MainParser {
         let mut _port: String = String::new();
         let mut _restart: String = String::new();
         let mut _env: Vec<String> = vec!();
+        debug!("running docker run on {}", &_node);
         match &self.command {
             DockerCommand::Run {
                 node,
@@ -169,7 +174,7 @@ impl MainParser {
                 panic!("error in send_log_command")
             },
         };
-        debug!("_node: {}, _image: {}", &_node, &_image);
+        debug!("connecting to {}", &_node);
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
             .connect(&_node)
@@ -177,6 +182,7 @@ impl MainParser {
         println!("host {:?}", &_node);
         match session {
             Ok(session) => {
+                debug!("running command docker run on {}", &_node);
                 let mut output = session.command("sudo");
                 let _ = &output.arg("docker")
                     .arg("run")
@@ -271,10 +277,12 @@ impl MainParser {
 
     pub async fn send_image_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
         debug!("searching nodes: {:?}", &nodes);
+        debug!("running docker image ls");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
                 let mut return_str = String::new();
                 let owned_node = node.clone();
+                debug!("connecting to {}", &node);
                 let session = openssh::SessionBuilder::default()
                     .connect_timeout(std::time::Duration::new(1, 0))
                     .connect(&owned_node)
@@ -282,6 +290,7 @@ impl MainParser {
                 return_str.push_str(&format!("host {:?}\n", &owned_node));
                 match session {
                     Ok(session) => {
+                        debug!("running command docker image ls on {}", &node);
                         let output = session
                             .command("sudo")
                             .arg("docker")
@@ -308,11 +317,13 @@ impl MainParser {
     }
 
     pub async fn send_info_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
-        debug!("Displaying nodes: {:?}", &nodes);
+        debug!("searching nodes: {:?}", &nodes);
+        debug!("running docker info");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
                 let mut return_str = String::new();
                 let owned_node = node.clone();
+                debug!("connecting to {}", &node);
                 let session = openssh::SessionBuilder::default()
                     .connect_timeout(std::time::Duration::new(1, 0))
                     .connect(&owned_node)
@@ -320,6 +331,7 @@ impl MainParser {
                 return_str.push_str(&format!("host {:?}\n", &owned_node));
                 match session {
                     Ok(session) => {
+                        debug!("running command docker info on {}", &node);
                         let output = session
                             .command("sudo")
                             .arg("docker")

@@ -29,14 +29,16 @@ pub fn get_nodes(regex: String) -> Result<Vec<String>, Box<dyn Error>> {
 pub async fn send_command_node_container(command: String, node: String, container: String) -> Result<(), Box<dyn Error>> {
     debug!("node: {}, container: {}", &node, &container);
     debug!("running docker {}", &command);
+    debug!("connecting to {}", &node);
     let session = openssh::SessionBuilder::default()
         .connect_timeout(std::time::Duration::from_secs(1))
         .connect(&node)
         .await;
-    println!("host {:?}", &node);
 
+    debug!("running command docker {} on {}", &command, &container);
     match session {
         Ok(session) => {
+            println!("host {:?}", &node);
             let output = session
                 .command("sudo")
                 .arg("docker")
