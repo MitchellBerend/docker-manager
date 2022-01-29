@@ -15,14 +15,15 @@
 //      This will stop a specified container on a specified node
 // rm (done)
 //      This will remove a specified container on a specified node
-//
+// image (done)
+//      This will show all images on a node
+// info (done)
+//      This will show docker info of all nodes
 // TODO 
 // Add proper debug logging (done)
 
 
 use std::error::Error;
-use std::io::Read;
-use std::str::from_utf8;
 
 use clap::Parser;
 use log::{LevelFilter};
@@ -31,6 +32,8 @@ use dockercommand::DockerCommand;
 mod logger;
 mod parser;
 mod dockercommand;
+mod functions;
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -54,26 +57,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     match args.command {
         DockerCommand::Ps {ref regex} => {
-            let mut _regex: String = regex.clone();
-            let mut config_buf: Vec<u8> = vec![];
-            let mut _path = std::env::var("HOME")?;
-            _path.push_str("/.ssh/config");
-            let mut ssh_conf_file = std::fs::File::open(_path)?;
-
-            ssh_conf_file.read_to_end(&mut config_buf)?;
-            let config_str: String = String::from(from_utf8(&config_buf)?);
-
-            let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &_regex))?;
-            let regex_iter = hostname_regex.find_iter(&config_str);
-
-            // explicit drop block since these are not needed anymore
-            {
-                drop(ssh_conf_file);
-            }
-            let mut nodes: Vec<String> = vec![];
-            for host in regex_iter {
-                nodes.push(String::from(host.as_str().split_once(" ").unwrap().1));
-            }
+            let nodes = functions::get_nodes(regex.clone())?;
             args.send_ps_command(&nodes).await?;
         }
         DockerCommand::Exec { node: _, container: _, command: _ } => {
@@ -95,29 +79,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             args.send_inspect_command().await?;
         }
         DockerCommand::Image { ref regex} => {
-            let mut _regex: String = regex.clone();
-            let mut config_buf: Vec<u8> = vec![];
-            let mut _path = std::env::var("HOME")?;
-            _path.push_str("/.ssh/config");
-            let mut ssh_conf_file = std::fs::File::open(_path)?;
-
-            ssh_conf_file.read_to_end(&mut config_buf)?;
-            let config_str: String = String::from(from_utf8(&config_buf)?);
-
-            let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &_regex))?;
-            let regex_iter = hostname_regex.find_iter(&config_str);
-
-            // explicit drop block since these are not needed anymore
-            {
-                drop(ssh_conf_file);
-            }
-            let mut nodes: Vec<String> = vec![];
-            for host in regex_iter {
-                nodes.push(String::from(host.as_str().split_once(" ").unwrap().1));
-            }
+            let nodes = functions::get_nodes(regex.clone())?;
             args.send_image_command(&nodes).await?;
         }
+        DockerCommand::Info { ref regex } => {
+            let nodes = functions::get_nodes(regex.clone())?;
+            args.send_info_command(&nodes).await?;
+        }
     }
-
     Ok(())
 }

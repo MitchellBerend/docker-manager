@@ -104,5 +104,12 @@ pub enum DockerCommand {
         /// The regex pattern that will be used to match entries from the config.
         #[clap(short, long, default_value = ".*")]
         regex: String,
-    }
+    },
+
+    /// Shows info of all matched nodes.
+    Info {
+        /// The regex pattern that will be used to match entries from the config.
+        #[clap(short, long, default_value = ".*")]
+        regex: String,
+    },
 }
