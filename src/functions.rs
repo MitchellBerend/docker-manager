@@ -70,8 +70,8 @@ pub async fn get_remote_output_command(node: String, commands: &[String]) -> Str
     return_str.push_str(&format!("host {:?}\n", &node));
     match session {
         Ok(session) => {
-            let output = build_output(session, &commands).await;
-            info!("running command docker {:?} on {}",&commands ,&node);
+            let output = build_output(session, commands).await;
+            info!("running command docker {:?} on {}", commands ,&node);
             return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
         }
         Err(_) => {
