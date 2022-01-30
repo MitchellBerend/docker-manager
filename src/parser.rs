@@ -1,11 +1,13 @@
 // This module defines the main cli
 
-use std::error::Error;
+use std::{error::Error};
 use std::str::from_utf8;
+
 
 use clap::Parser;
 use futures::{stream, StreamExt};
 use log::{info, debug, error};
+use crate::functions::{get_remote_output_command};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 
 
@@ -44,38 +46,13 @@ impl MainParser {
         debug!("running docker ps");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
-                let mut return_str = String::new();
-                debug!("connecting to {}", &node);
-                let session = openssh::SessionBuilder::default()
-                    .connect_timeout(std::time::Duration::new(1, 0))
-                    .connect(&node)
-                    .await;
-                return_str.push_str(&format!("host {:?}\n", &node));
-                match session {
-                    Ok(session) => {
-                        info!("running command docker ps on {}", &node);
-                        let output = session
-                            .command("sudo")
-                            .arg("docker")
-                            .arg("ps")
-                            .arg("-a")
-                            .output()
-                            .await
-                            .unwrap();
-                        return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
-                    }
-                    Err(_) => {
-                        return_str.push_str(&format!("Could not connect to {}", &node));
-                    }
-                }
-                return_str
-            })
-            .buffer_unordered(CONCURRENT_REQUESTS);
+                let commands: [String; 2] = ["ps".to_string(), "-a".to_string()];
+                get_remote_output_command(node.clone(), &commands).await
+            }).buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
             .for_each(|body| async move {
-                println!("{}", body);
-            })
-            .await;
+                println!("{}", &body);
+            }).await;
         Ok(())
     }
 
@@ -285,32 +262,8 @@ impl MainParser {
         debug!("running docker image ls");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
-                let mut return_str = String::new();
-                let owned_node = node.clone();
-                debug!("connecting to {}", &node);
-                let session = openssh::SessionBuilder::default()
-                    .connect_timeout(std::time::Duration::new(1, 0))
-                    .connect(&owned_node)
-                    .await;
-                return_str.push_str(&format!("host {:?}\n", &owned_node));
-                match session {
-                    Ok(session) => {
-                        info!("running command docker image ls on {}", &node);
-                        let output = session
-                            .command("sudo")
-                            .arg("docker")
-                            .arg("image")
-                            .arg("ls")
-                            .output()
-                            .await
-                            .unwrap();
-                        return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
-                    }
-                    Err(_) => {
-                        return_str.push_str(&format!("Could not connect to {}", &owned_node));
-                    }
-                }
-                return_str
+                let commands: [String; 2] = ["image".to_string(), "ls".to_string()];
+                get_remote_output_command(node.clone(), &commands).await
             })
             .buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
@@ -326,31 +279,8 @@ impl MainParser {
         debug!("running docker info");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
-                let mut return_str = String::new();
-                let owned_node = node.clone();
-                debug!("connecting to {}", &node);
-                let session = openssh::SessionBuilder::default()
-                    .connect_timeout(std::time::Duration::new(1, 0))
-                    .connect(&owned_node)
-                    .await;
-                return_str.push_str(&format!("host {:?}\n", &owned_node));
-                match session {
-                    Ok(session) => {
-                        info!("running command docker info on {}", &node);
-                        let output = session
-                            .command("sudo")
-                            .arg("docker")
-                            .arg("info")
-                            .output()
-                            .await
-                            .unwrap();
-                        return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
-                    }
-                    Err(_) => {
-                        return_str.push_str(&format!("Could not connect to {}", &owned_node));
-                    }
-                }
-                return_str
+                let commands: [String; 1] = ["info".to_string()];
+                get_remote_output_command(node.clone(), &commands).await
             })
             .buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
