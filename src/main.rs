@@ -19,6 +19,8 @@
 //      This will show all images on a node
 // info (done)
 //      This will show docker info of all nodes
+// start (done)
+//      This will start a container on a specific node
 
 // TODO 
 // Add proper debug logging (done)
@@ -89,6 +91,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         DockerCommand::Top { node: _, container: _ } => {
             args.send_top_command().await?;
+        }
+        DockerCommand::Start { node: _, container: _ } => {
+            args.send_start_command().await?;
         }
     }
     Ok(())

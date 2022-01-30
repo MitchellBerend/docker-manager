@@ -377,4 +377,22 @@ impl MainParser {
         };
         Ok(())
     }
+
+    pub async fn send_start_command(&self) -> Result<(), Box<dyn Error>> {
+        match &self.command {
+            DockerCommand::Start { node, container } => {
+                debug!("node: {}, container: {}", &node, &container);
+                send_command_node_container(
+                    "start".to_string(),
+                    node.clone(),
+                    container.clone(),
+                ).await?
+            }
+            _ => {
+                error!("The send_log_command was somehow called with {:#?}", &self.command);
+                panic!("error in send_start_command")
+            },
+        };
+        Ok(())
+    }
 }
