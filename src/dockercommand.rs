@@ -89,7 +89,7 @@ pub enum DockerCommand {
         container: String,
     },
 
-    /// Gets low level information of  container on a specified node.
+    /// Gets low level information of a container on a specified node.
     Inspect {
         /// The node the container is on.
         #[clap(index(2))]
