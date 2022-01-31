@@ -9,6 +9,7 @@
 This program serves as an interface that provides docker information on remote nodes.
 It is tested on rust version 1.58.1 stable.
 
+Run docker-manager --help for the full usage of this program.
 
 # Usage
 ## Install
