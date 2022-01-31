@@ -80,7 +80,12 @@ pub async fn get_remote_output_command(node: String, commands: &[String]) -> Str
             return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
         }
         Err(_) => {
-            return_str.push_str(&format!("Could not connect to {node}"));
+            error!("Running check since there was a connection error with node: {node}");
+            let session = openssh::SessionBuilder::default()
+            .connect_timeout(std::time::Duration::from_secs(1))
+            .connect(&node).await.unwrap();
+            let _ = session.check().await.unwrap();
+            println!("Could not connect to {node}");
         }
     }
     return_str
