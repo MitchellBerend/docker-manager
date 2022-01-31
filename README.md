@@ -21,6 +21,8 @@ You can run the uninstall.sh script, or manually delete the /usr/bin/docker-mana
 program.
 
 ## Configuration
-The program will use the current users ~/.ssh/config file to look for hostnames. There
-is a regex flag in some of the commands that lets you filter on hostname by pattern.
-This is important if you have nodes that do not have docker installed on them.
+The program will use the current users ~/.ssh/config file to look for hostnames.
+This means if you run this program with `sudo docker-manager ps` it will check 
+`/home/root/.ssh/config`. There is a regex flag in some of the commands that lets
+you filter on hostname by pattern. This is important if you have nodes that do not
+have docker installed on them.
