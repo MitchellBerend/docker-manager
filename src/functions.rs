@@ -77,26 +77,29 @@ pub async fn send_command_node(node: String, commands: &[String]) -> String {
         Ok(session) => {
             let output = build_output(session, commands).await;
             info!("running command docker {:?} on {node}", commands);
-            return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
+            match output {
+                Ok(output) => {
+                    return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
+                }
+                Err(e) => {
+                    error!("{}", e)
+                }
+            }
         }
         Err(_) => {
             error!("Running check since there was a connection error with node: {node}");
-            let session = openssh::SessionBuilder::default()
-            .connect_timeout(std::time::Duration::from_secs(1))
-            .connect(&node).await.unwrap();
-            let _ = session.check().await.unwrap();
             println!("Could not connect to {node}");
         }
     }
     return_str
 }
 
-async fn build_output(session: Session, commands: &[String]) -> Output {
+async fn build_output(session: Session, commands: &[String]) -> Result<Output, openssh::Error> {
     debug!("building command: {:#?}", commands);
     let mut output = session.command("sudo");
     output.arg("docker");
     for command in commands {
         output.arg(command);
     }
-    output.output().await.unwrap()
+    output.output().await
 }
