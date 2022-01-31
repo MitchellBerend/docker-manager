@@ -7,7 +7,7 @@ use std::str::from_utf8;
 use clap::Parser;
 use futures::{stream, StreamExt};
 use log::{info, debug, error};
-use crate::functions::{get_remote_output_command};
+use crate::functions::{send_command_node};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 
 
@@ -47,7 +47,7 @@ impl MainParser {
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
                 let commands: [String; 2] = ["ps".to_string(), "-a".to_string()];
-                get_remote_output_command(node.clone(), &commands).await
+                send_command_node(node.clone(), &commands).await
             }).buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
             .for_each(|body| async move {
@@ -263,7 +263,7 @@ impl MainParser {
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
                 let commands: [String; 2] = ["image".to_string(), "ls".to_string()];
-                get_remote_output_command(node.clone(), &commands).await
+                send_command_node(node.clone(), &commands).await
             })
             .buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
@@ -280,7 +280,7 @@ impl MainParser {
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
                 let commands: [String; 1] = ["info".to_string()];
-                get_remote_output_command(node.clone(), &commands).await
+                send_command_node(node.clone(), &commands).await
             })
             .buffer_unordered(CONCURRENT_REQUESTS);
         _bodies

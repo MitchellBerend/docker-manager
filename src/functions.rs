@@ -65,7 +65,7 @@ pub async fn send_command_node_container(command: String, node: String, containe
     Ok(())
 }
 
-pub async fn get_remote_output_command(node: String, commands: &[String]) -> String {
+pub async fn send_command_node(node: String, commands: &[String]) -> String {
     let mut return_str = String::new();
     debug!("connecting to {node}");
     let session = openssh::SessionBuilder::default()
