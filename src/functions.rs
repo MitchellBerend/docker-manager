@@ -5,7 +5,7 @@ use std::{io::Read, process::Output};
 use std::str::from_utf8;
 use std::error::Error;
 
-use log::{info, debug};
+use log::{info, debug, error};
 use openssh::Session;
 
 
@@ -54,6 +54,11 @@ pub async fn send_command_node_container(command: String, node: String, containe
             );
         }
         Err(_) => {
+            error!("Running check since there was a connection error with node: {node}");
+            let session = openssh::SessionBuilder::default()
+            .connect_timeout(std::time::Duration::from_secs(1))
+            .connect(&node).await?;
+            let _ = session.check().await?;
             println!("Could not connect to {node}");
         }
     }
