@@ -13,11 +13,11 @@ It is tested on rust version 1.58.1 stable.
 # Usage
 ## Install
 You can install this by compiling it manually or running the install.sh script.
-It will automatically install the program in your /usr/bin and does require sudo
+It will automatically install the program in your `/usr/bin` and does require sudo
 priviledges. 
 
 ## Uninstall
-You can run the uninstall.sh script, or manually delete the /usr/bin/docker-manager
+You can run the uninstall.sh script, or manually delete the `/usr/bin/docker-manager`
 program.
 
 ## Configuration
