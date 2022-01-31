@@ -17,8 +17,8 @@ pub fn get_nodes(regex: String) -> Result<Vec<String>, Box<dyn Error>> {
 
     ssh_conf_file.read_to_end(&mut config_buf)?;
     let config_str: String = String::from(from_utf8(&config_buf)?);
-
-    let hostname_regex = regex::Regex::new(&format!("[^#]Host {}", &regex))?;
+    debug!("regex pattern: ^Host {regex}");
+    let hostname_regex = regex::Regex::new(&format!(r"[^#]Host {}", &regex))?;
     let regex_iter = hostname_regex.find_iter(&config_str);
     let mut nodes: Vec<String> = vec![];
         for host in regex_iter {

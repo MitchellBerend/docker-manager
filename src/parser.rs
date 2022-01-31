@@ -92,7 +92,6 @@ impl MainParser {
             _ => {
                 error!("The send_log_command was somehow called with {:#?}", &self.command);
                 panic!("error in send_log_command")
-                // replace with proper error log and return Ok(())
             },
         };
         debug!("connecting to {_node}");
@@ -167,7 +166,6 @@ impl MainParser {
                 let _ = &output.arg("docker")
                     .arg("run")
                     .arg("-d");
-                    // working vvvv
                     if !&_port.is_empty() {
                         let _ = &output.arg("-p");
                         let _ = &output.arg((&_port).to_string());
