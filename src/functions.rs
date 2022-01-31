@@ -28,15 +28,15 @@ pub fn get_nodes(regex: String) -> Result<Vec<String>, Box<dyn Error>> {
 }
 
 pub async fn send_command_node_container(command: String, node: String, container: String) -> Result<(), Box<dyn Error>> {
-    info!("node: {}, container: {}", &node, &container);
-    debug!("running docker {}", &command);
-    debug!("connecting to {}", &node);
+    info!("node: {node}, container: {container}");
+    debug!("running docker {command}");
+    debug!("connecting to {node}");
     let session = openssh::SessionBuilder::default()
         .connect_timeout(std::time::Duration::from_secs(1))
         .connect(&node)
         .await;
 
-    debug!("running command docker {} on {}", &command, &container);
+    debug!("running command docker {command} on {container}");
     match session {
         Ok(session) => {
             println!("host {:?}", &node);
@@ -54,7 +54,7 @@ pub async fn send_command_node_container(command: String, node: String, containe
             );
         }
         Err(_) => {
-            println!("Could not connect to {}", &node);
+            println!("Could not connect to {node}");
         }
     }
     Ok(())
@@ -62,7 +62,7 @@ pub async fn send_command_node_container(command: String, node: String, containe
 
 pub async fn get_remote_output_command(node: String, commands: &[String]) -> String {
     let mut return_str = String::new();
-    debug!("connecting to {}", &node);
+    debug!("connecting to {node}");
     let session = openssh::SessionBuilder::default()
         .connect_timeout(std::time::Duration::new(1, 0))
         .connect(&node)
@@ -71,11 +71,11 @@ pub async fn get_remote_output_command(node: String, commands: &[String]) -> Str
     match session {
         Ok(session) => {
             let output = build_output(session, commands).await;
-            info!("running command docker {:?} on {}", commands ,&node);
+            info!("running command docker {:?} on {node}", commands);
             return_str.push_str(&String::from(from_utf8(&output.stdout).unwrap()));
         }
         Err(_) => {
-            return_str.push_str(&format!("Could not connect to {}", &node));
+            return_str.push_str(&format!("Could not connect to {node}"));
         }
     }
     return_str

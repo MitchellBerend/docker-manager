@@ -51,7 +51,7 @@ impl MainParser {
             }).buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
             .for_each(|body| async move {
-                println!("{}", &body);
+                println!("{body}");
             }).await;
         Ok(())
     }
@@ -59,7 +59,7 @@ impl MainParser {
     pub async fn send_log_command(&self) -> Result<(), Box<dyn Error>> {
         match &self.command {
             DockerCommand::Logs { node, container } => {
-                debug!("node: {}, container: {}", &node, &container);
+                debug!("node: {node}, container: {container}");
                 send_command_node_container(
                     "logs".to_string(),
                     node.clone(),
@@ -78,7 +78,7 @@ impl MainParser {
         let mut _node: String = String::new();
         let mut _container: String = String::new();
         let mut _command: String = String::new();
-        debug!("running docker exec on {}", &_container);
+        debug!("running docker exec on {_container}");
         match &self.command {
             DockerCommand::Exec {
                 node,
@@ -95,7 +95,7 @@ impl MainParser {
                 // replace with proper error log and return Ok(())
             },
         };
-        debug!("connecting to {}", &_node);
+        debug!("connecting to {_node}");
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
             .connect(&_node)
@@ -103,7 +103,7 @@ impl MainParser {
         println!("host {:?}", &_node);
         match session {
             Ok(session) => {
-                info!("running command docker exec on {}", &_container);
+                info!("running command docker exec on {_container}");
                 let output = session
                     .command("sudo")
                     .arg("docker")
@@ -119,7 +119,7 @@ impl MainParser {
                 );
             }
             Err(_) => {
-                println!("Could not connect to {}", &_node);
+                println!("Could not connect to {_node}");
             }
         }
         Ok(())
@@ -132,7 +132,7 @@ impl MainParser {
         let mut _port: String = String::new();
         let mut _restart: String = String::new();
         let mut _env: Vec<String> = vec!();
-        debug!("running docker run on {}", &_node);
+        debug!("running docker run on {_node}");
         match &self.command {
             DockerCommand::Run {
                 node,
@@ -154,7 +154,7 @@ impl MainParser {
                 panic!("error in send_log_command")
             },
         };
-        debug!("connecting to {}", &_node);
+        debug!("connecting to {_node}");
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
             .connect(&_node)
@@ -162,7 +162,7 @@ impl MainParser {
         println!("host {:?}", &_node);
         match session {
             Ok(session) => {
-                info!("running command docker run on {}", &_node);
+                info!("running command docker run on {_node}");
                 let mut output = session.command("sudo");
                 let _ = &output.arg("docker")
                     .arg("run")
@@ -198,7 +198,7 @@ impl MainParser {
                 );
             }
             Err(_) => {
-                println!("Could not connect to {}", &_node);
+                println!("Could not connect to {_node}");
             }
         }
         Ok(())
@@ -207,7 +207,7 @@ impl MainParser {
     pub async fn send_stop_command(&self) -> Result<(), Box<dyn Error>> {
         match &self.command {
             DockerCommand::Stop { node, container } => {
-                debug!("node: {}, container: {}", &node, &container);
+                debug!("node: {node}, container: {container}");
                 send_command_node_container(
                     "stop".to_string(),
                     node.clone(),
@@ -225,7 +225,7 @@ impl MainParser {
     pub async fn send_rm_command(&self) -> Result<(), Box<dyn Error>> {
         match &self.command {
             DockerCommand::Rm { node, container } => {
-                debug!("node: {}, container: {}", &node, &container);
+                debug!("node: {node}, container: {container}");
                 send_command_node_container(
                     "rm".to_string(),
                     node.clone(),
@@ -243,7 +243,7 @@ impl MainParser {
     pub async fn send_inspect_command(&self) -> Result<(), Box<dyn Error>> {
         match &self.command {
             DockerCommand::Inspect { node, container } => {
-                debug!("node: {}, container: {}", &node, &container);
+                debug!("node: {node}, container: {container}");
                 send_command_node_container(
                     "inspect".to_string(),
                     node.clone(),
@@ -258,7 +258,7 @@ impl MainParser {
     }
 
     pub async fn send_image_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
-        info!("searching nodes: {:?}", &nodes);
+        info!("searching nodes: {:#?}", &nodes);
         debug!("running docker image ls");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
@@ -268,7 +268,7 @@ impl MainParser {
             .buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
             .for_each(|body| async move {
-                println!("{}", body);
+                println!("{body}");
             })
             .await;
         Ok(())
@@ -285,7 +285,7 @@ impl MainParser {
             .buffer_unordered(CONCURRENT_REQUESTS);
         _bodies
             .for_each(|body| async move {
-                println!("{}", body);
+                println!("{body}");
             })
             .await;
         Ok(())
@@ -311,7 +311,7 @@ impl MainParser {
     pub async fn send_start_command(&self) -> Result<(), Box<dyn Error>> {
         match &self.command {
             DockerCommand::Start { node, container } => {
-                debug!("node: {}, container: {}", &node, &container);
+                debug!("node: {node}, container: {container}");
                 send_command_node_container(
                     "start".to_string(),
                     node.clone(),
