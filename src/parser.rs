@@ -255,12 +255,12 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_image_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
+    pub async fn send_images_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
         info!("searching nodes: {:#?}", &nodes);
         debug!("running docker image ls");
         let _bodies = stream::iter(nodes)
             .map(|node| async move {
-                let commands: [String; 2] = ["image".to_string(), "ls".to_string()];
+                let commands: [String; 1] = ["images".to_string()];
                 send_command_node(node.clone(), &commands).await
             })
             .buffer_unordered(CONCURRENT_REQUESTS);

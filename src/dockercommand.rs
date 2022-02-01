@@ -100,7 +100,7 @@ pub enum DockerCommand {
     },
 
     /// Shows all current images on matched nodes.
-    Image {
+    Images {
         /// The regex pattern that will be used to match entries from the config.
         #[clap(short, long, default_value = ".*")]
         regex: String,

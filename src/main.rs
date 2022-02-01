@@ -81,9 +81,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         DockerCommand::Inspect { node: _, container: _ } => {
             args.send_inspect_command().await?;
         }
-        DockerCommand::Image { ref regex} => {
+        DockerCommand::Images { ref regex} => {
             let nodes = functions::get_nodes(regex.clone())?;
-            args.send_image_command(&nodes).await?;
+            args.send_images_command(&nodes).await?;
         }
         DockerCommand::Info { ref regex } => {
             let nodes = functions::get_nodes(regex.clone())?;
