@@ -41,7 +41,7 @@ pub struct MainParser {
 
 
 impl MainParser {
-    pub async fn send_ps_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
+    pub async fn send_ps_command(&self, nodes: &[String]) {
         info!("searching nodes: {:?}", &nodes);
         debug!("running docker ps");
         let _bodies = stream::iter(nodes)
@@ -53,7 +53,6 @@ impl MainParser {
             .for_each(|body| async move {
                 println!("{body}");
             }).await;
-        Ok(())
     }
 
     pub async fn send_log_command(&self) -> Result<(), Box<dyn Error>> {
@@ -255,7 +254,7 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_images_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
+    pub async fn send_images_command(&self, nodes: &[String]) {
         info!("searching nodes: {:#?}", &nodes);
         debug!("running docker image ls");
         let _bodies = stream::iter(nodes)
@@ -269,10 +268,9 @@ impl MainParser {
                 println!("{body}");
             })
             .await;
-        Ok(())
     }
 
-    pub async fn send_info_command(&self, nodes: &[String]) -> Result<(), Box<dyn Error>> {
+    pub async fn send_info_command(&self, nodes: &[String]) {
         info!("searching nodes: {:?}", &nodes);
         debug!("running docker info");
         let _bodies = stream::iter(nodes)
@@ -286,7 +284,6 @@ impl MainParser {
                 println!("{body}");
             })
             .await;
-        Ok(())
     }
 
     pub async fn send_top_command(&self) -> Result<(), Box<dyn Error>> {

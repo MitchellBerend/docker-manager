@@ -61,7 +61,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     match args.command {
         DockerCommand::Ps {ref regex} => {
             let nodes = functions::get_nodes(regex.clone())?;
-            args.send_ps_command(&nodes).await?;
+            args.send_ps_command(&nodes).await;
         }
         DockerCommand::Exec { node: _, container: _, command: _ } => {
             args.send_exec_command().await?;
@@ -83,11 +83,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         DockerCommand::Images { ref regex} => {
             let nodes = functions::get_nodes(regex.clone())?;
-            args.send_images_command(&nodes).await?;
+            args.send_images_command(&nodes).await;
         }
         DockerCommand::Info { ref regex } => {
             let nodes = functions::get_nodes(regex.clone())?;
-            args.send_info_command(&nodes).await?;
+            args.send_info_command(&nodes).await;
         }
         DockerCommand::Top { node: _, container: _ } => {
             args.send_top_command().await?;
