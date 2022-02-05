@@ -1,12 +1,12 @@
 // This module defines the main cli
 
-use std::{error::Error};
 use std::str::from_utf8;
 
 
 use clap::Parser;
 use futures::{stream, StreamExt};
 use log::{info, debug, error};
+use anyhow::Result;
 use crate::functions::{send_command_node};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 
@@ -55,7 +55,7 @@ impl MainParser {
             }).await;
     }
 
-    pub async fn send_log_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_log_command(&self) -> Result<()> {
         match &self.command {
             DockerCommand::Logs { node, container } => {
                 debug!("node: {node}, container: {container}");
@@ -73,7 +73,7 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_exec_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_exec_command(&self) -> Result<()> {
         let mut _node: String = String::new();
         let mut _container: String = String::new();
         let mut _command: String = String::new();
@@ -123,7 +123,7 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_run_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_run_command(&self) -> Result<()> {
         let mut _node: String = String::new();
         let mut _image: String = String::new();
         let mut _name: String = String::new();
@@ -201,7 +201,7 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_stop_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_stop_command(&self) -> Result<()> {
         match &self.command {
             DockerCommand::Stop { node, container } => {
                 debug!("node: {node}, container: {container}");
@@ -219,7 +219,7 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_rm_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_rm_command(&self) -> Result<()> {
         match &self.command {
             DockerCommand::Rm { node, container } => {
                 debug!("node: {node}, container: {container}");
@@ -237,7 +237,7 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_inspect_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_inspect_command(&self) -> Result<()> {
         match &self.command {
             DockerCommand::Inspect { node, container } => {
                 debug!("node: {node}, container: {container}");
@@ -286,7 +286,7 @@ impl MainParser {
             .await;
     }
 
-    pub async fn send_top_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_top_command(&self) -> Result<()> {
         match &self.command {
             DockerCommand::Top { node, container } => {
                 send_command_node_container(
@@ -303,7 +303,7 @@ impl MainParser {
         Ok(())
     }
 
-    pub async fn send_start_command(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn send_start_command(&self) -> Result<()> {
         match &self.command {
             DockerCommand::Start { node, container } => {
                 debug!("node: {node}, container: {container}");

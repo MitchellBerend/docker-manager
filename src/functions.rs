@@ -3,13 +3,12 @@
 
 use std::{io::Read, process::Output};
 use std::str::from_utf8;
-use std::error::Error;
 
 use log::{info, debug, error};
 use openssh::Session;
+use anyhow::Result;
 
-
-pub fn get_nodes(regex: String) -> Result<Vec<String>, Box<dyn Error>> {
+pub fn get_nodes(regex: String) -> Result<Vec<String>> {
     let mut config_buf: Vec<u8> = vec![];
     let mut _path = std::env::var("HOME")?;
     _path.push_str("/.ssh/config");
@@ -27,7 +26,7 @@ pub fn get_nodes(regex: String) -> Result<Vec<String>, Box<dyn Error>> {
     Ok(nodes)
 }
 
-pub async fn send_command_node_container(command: String, node: String, container: String) -> Result<(), Box<dyn Error>> {
+pub async fn send_command_node_container(command: String, node: String, container: String) -> Result<()> {
     info!("node: {node}, container: {container}");
     debug!("running docker {command}");
     debug!("connecting to {node}");
@@ -94,12 +93,12 @@ pub async fn send_command_node(node: String, commands: &[String]) -> String {
     return_str
 }
 
-async fn build_output(session: Session, commands: &[String]) -> Result<Output, openssh::Error> {
+async fn build_output(session: Session, commands: &[String]) -> Result<Output> {
     debug!("building command: {:#?}", commands);
     let mut output = session.command("sudo");
     output.arg("docker");
     for command in commands {
         output.arg(command);
     }
-    output.output().await
+    Ok(output.output().await?)
 }
