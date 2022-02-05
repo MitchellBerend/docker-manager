@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "docker-manager"
-version = "0.14.1"
+version = "0.14.2"
 dependencies = [
  "anyhow",
  "clap",
