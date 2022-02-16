@@ -380,9 +380,9 @@ impl MainParser {
             }
         }
         debug!("{:?}", _picked_node.as_ref().unwrap());
-
         // connect to chose node
         let picked_node = _picked_node.unwrap();
+        println!("Deploying image to: {}", picked_node.node);
         let session = openssh::SessionBuilder::default()
                     .connect_timeout(std::time::Duration::new(1, 0))
                     .connect(&picked_node.node)
@@ -444,7 +444,9 @@ impl MainParser {
         warn!("
         This does not actually deploy the image yet.
         You need to manually run the image.
-        It the image name is the name of the project and the tag is latest.");
+        It the image name is the name of the project and the tag is latest.
+        run the following command to actually run the image on that node:\n
+            docker-manager run {} {}:latest\n", picked_node.node, project_name);
         Ok(())
     }
 }
