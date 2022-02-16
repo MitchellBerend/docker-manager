@@ -36,6 +36,7 @@ mod logger;
 mod parser;
 mod dockercommand;
 mod functions;
+mod structs;
 
 
 #[tokio::main]
@@ -94,6 +95,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         DockerCommand::Start { node: _, container: _ } => {
             args.send_start_command().await?;
+        }
+        DockerCommand::Deploy { ref regex,ref project_name, ref file } => {
+            let nodes = functions::get_nodes(regex.clone())?;
+            args.send_deploy_command(&nodes, project_name.clone(), file.clone()).await?;
         }
     }
     Ok(())

@@ -2,14 +2,14 @@
 
 use std::str::from_utf8;
 
-
 use clap::Parser;
 use futures::{stream, StreamExt};
-use log::{info, debug, error};
+use log::{info, debug, error, warn};
 use anyhow::Result;
+use regex;
 use crate::functions::{send_command_node};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
-
+use crate::structs::NodeMemory;
 
 const CONCURRENT_REQUESTS: usize = 10;
 
@@ -41,18 +41,22 @@ pub struct MainParser {
 
 
 impl MainParser {
+    async fn send_async_command(&self,nodes: &[String], commands: &[String]) -> Vec<String> {
+        let bodies = stream::iter(nodes)
+        .map(|node| async move {
+            send_command_node(node.clone(), &commands).await
+        }).buffer_unordered(CONCURRENT_REQUESTS);
+        bodies.collect::<Vec<String>>().await
+    }
+
     pub async fn send_ps_command(&self, nodes: &[String]) {
         info!("searching nodes: {:?}", &nodes);
         debug!("running docker ps");
-        let _bodies = stream::iter(nodes)
-            .map(|node| async move {
-                let commands: [String; 2] = ["ps".to_string(), "-a".to_string()];
-                send_command_node(node.clone(), &commands).await
-            }).buffer_unordered(CONCURRENT_REQUESTS);
-        _bodies
-            .for_each(|body| async move {
-                println!("{body}");
-            }).await;
+        let commands: [String; 2] = ["ps".to_string(), "-a".to_string()];
+        let results = self.send_async_command(&nodes, &commands).await;
+        for result in results {
+            println!("{result}");
+        }
     }
 
     pub async fn send_log_command(&self) -> Result<()> {
@@ -257,33 +261,21 @@ impl MainParser {
     pub async fn send_images_command(&self, nodes: &[String]) {
         info!("searching nodes: {:#?}", &nodes);
         debug!("running docker image ls");
-        let _bodies = stream::iter(nodes)
-            .map(|node| async move {
-                let commands: [String; 1] = ["images".to_string()];
-                send_command_node(node.clone(), &commands).await
-            })
-            .buffer_unordered(CONCURRENT_REQUESTS);
-        _bodies
-            .for_each(|body| async move {
-                println!("{body}");
-            })
-            .await;
+        let commands: [String; 1] = ["images".to_string()];
+        let results = self.send_async_command(&nodes, &commands).await;
+        for result in results {
+            println!("{result}");
+        }
     }
 
     pub async fn send_info_command(&self, nodes: &[String]) {
         info!("searching nodes: {:?}", &nodes);
         debug!("running docker info");
-        let _bodies = stream::iter(nodes)
-            .map(|node| async move {
-                let commands: [String; 1] = ["info".to_string()];
-                send_command_node(node.clone(), &commands).await
-            })
-            .buffer_unordered(CONCURRENT_REQUESTS);
-        _bodies
-            .for_each(|body| async move {
-                println!("{body}");
-            })
-            .await;
+        let commands: [String; 1] = ["info".to_string()];
+        let results = self.send_async_command(&nodes, &commands).await;
+        for result in results {
+            println!("{result}");
+        }
     }
 
     pub async fn send_top_command(&self) -> Result<()> {
@@ -318,6 +310,141 @@ impl MainParser {
                 panic!("error in send_start_command")
             },
         };
+        Ok(())
+    }
+
+    pub async fn send_deploy_command(&self, nodes: &[String], project_name: String, file: String) -> Result<()> {
+        // get all resources of nodes
+        info!("searching nodes: {:?}", &nodes);
+        debug!("running docker ps");
+        let mut _ret: Vec<String> = vec!();
+        let bodies = stream::iter(nodes)
+            .map(|node| async move  {
+                let mut return_str = String::new();
+                debug!("connecting to {node}");
+                let session = openssh::SessionBuilder::default()
+                    .connect_timeout(std::time::Duration::new(1, 0))
+                    .connect(&node)
+                    .await.unwrap();
+                let mut return_value = NodeMemory::default();
+                let mut output = session.command("sudo");
+                output.arg("cat")
+                    .arg("/proc/meminfo");
+                match output.output().await {
+                    Ok(output) => {
+                        let memory_regex = regex::Regex::new(&format!(r"MemTotal.*\nMemFree.*")).unwrap();
+                        let regex_iter = memory_regex.find_iter(from_utf8(&output.stdout).unwrap());
+                        for _match in regex_iter {
+                            return_str.push_str(_match.as_str());
+                            return_str.push('\n');
+                            let placeholder = &_match.as_str().split_once("\n").unwrap();
+                            let memtotal = placeholder.0.split_whitespace().nth(1).unwrap();
+                            let memfree = placeholder.1.split_whitespace().nth(1).unwrap();
+                            return_value = NodeMemory {
+                                node: node.clone(),
+                                memtotal: str::parse::<u64>(memtotal).unwrap(),
+                                memfree:str::parse::<u64>(memfree).unwrap(),
+                            }
+                            
+                        }
+                    }
+                    Err(e) => {
+                        error!("{}", e)
+                    }
+                }
+                return_value
+            }).buffer_unordered(CONCURRENT_REQUESTS);
+        let results = bodies.collect::<Vec<NodeMemory>>().await;
+
+        // decide which node is going to run the container
+        let mut _picked_node: Option<NodeMemory> = Option::None;
+        for result in results {
+            let node = result.node.clone();
+            let memtotal = result.memtotal;
+            let memfree = result.memfree;
+            let new_node = Some(NodeMemory {
+                node: node,
+                memtotal: memtotal,
+                memfree: memfree,
+            });
+            debug!("\nhost:\t\t{}\nMemTotal:\t{memtotal}\nMemFree\t\t{memfree}\n", &result.node);
+            match _picked_node {
+                Some(ref _node) => {
+                    if _node.memtotal - _node.memfree < memtotal - memfree {
+                        _picked_node = new_node;
+                    } else {}
+                },
+                None => {
+                    _picked_node = new_node;
+                },
+            }
+        }
+        debug!("{:?}", _picked_node.as_ref().unwrap());
+
+        // connect to chose node
+        let picked_node = _picked_node.unwrap();
+        let session = openssh::SessionBuilder::default()
+                    .connect_timeout(std::time::Duration::new(1, 0))
+                    .connect(&picked_node.node)
+                    .await.unwrap();
+
+        // mkdir for config
+        let args = format!("/srv/{project_name}");
+        let output = session.command("sudo")
+            .arg("mkdir")
+            .arg(args).output().await?;
+        debug!("Creating {file} dir");
+        debug!("stdout: {}", from_utf8(&output.stdout)?);
+        debug!("stderr: {}", from_utf8(&output.stderr)?);
+
+        // copy the config file to the target node
+        let mut local_shell = std::process::Command::new("scp");
+        local_shell.arg(format!("{file}"))
+            .arg(format!("{}:~/", &picked_node.node));
+        let local_output = local_shell.output()?;
+        debug!("moving {file} to {}", &picked_node.node);
+        debug!("stdout: {}", from_utf8(&local_output.stdout)?);
+        debug!("stderr: {}", from_utf8(&local_output.stderr)?);
+
+        // moving file from remote home to correct dir
+        let output = session.command("sudo")
+            .arg("mv")
+            .arg(format!("{file}"))
+            .arg(format!("/srv/{project_name}")).output().await?;
+        debug!("moving {file} to /srv/{project_name}");
+        debug!("stdout: {}", from_utf8(&output.stdout)?);
+        debug!("stderr: {}", from_utf8(&output.stderr)?);
+
+        // run the command with non relative paths to volumes if they are required
+        let suffix: [&str; 8] = [
+            &*format!("/srv/{project_name}"),
+            "&&",
+            "sudo",
+            "docker",
+            "build",
+            "-t",
+            &*format!("{project_name}:latest"),
+            ".",
+            // &*format!("/srv/{project_name}/."),
+        ];
+        let output = session.command("cd")
+            .raw_args(suffix)
+            // .arg("docker")
+            // .arg("build")
+            // .arg("-t")
+            // .arg(format!("{project_name}"))
+            // .arg(".")
+            // .arg(format!("/srv/{project_name}/."))
+            .output().await?;
+        debug!("building docker image for /srv/{project_name}");
+        debug!("remote command: {:?}", suffix);
+        debug!("stdout: {}", from_utf8(&output.stdout)?);
+        debug!("stderr: {}", from_utf8(&output.stderr)?);
+
+        warn!("
+        This does not actually deploy the image yet.
+        You need to manually run the image.
+        It the image name is the name of the project and the tag is latest.");
         Ok(())
     }
 }

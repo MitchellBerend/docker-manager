@@ -132,4 +132,17 @@ pub enum DockerCommand {
         #[clap(index(1))]
         container: String,
     },
+
+    /// Deploys the specified file automatically
+    Deploy {
+        /// The regex pattern that will be used to match entries from the config.
+        #[clap(short, long, default_value = ".*")]
+        regex: String,
+        /// The name of the dir that the project will live in
+        #[clap()]
+        project_name: String,
+        /// The file that needs to be deployed.
+        #[clap()]
+        file: String,
+    }
 }
