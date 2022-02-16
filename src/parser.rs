@@ -409,9 +409,9 @@ impl MainParser {
         // moving file from remote home to correct dir
         let output = session.command("sudo")
             .arg("mv")
-            .arg(format!("{file}"))
+            .arg("Dockerfile")
             .arg(format!("/srv/{project_name}")).output().await?;
-        debug!("moving {file} to /srv/{project_name}");
+        debug!("moving Dockerfile to /srv/{project_name}");
         debug!("stdout: {}", from_utf8(&output.stdout)?);
         debug!("stderr: {}", from_utf8(&output.stderr)?);
 
