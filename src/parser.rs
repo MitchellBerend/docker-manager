@@ -425,16 +425,9 @@ impl MainParser {
             "-t",
             &*format!("{project_name}:latest"),
             ".",
-            // &*format!("/srv/{project_name}/."),
         ];
         let output = session.command("cd")
             .raw_args(suffix)
-            // .arg("docker")
-            // .arg("build")
-            // .arg("-t")
-            // .arg(format!("{project_name}"))
-            // .arg(".")
-            // .arg(format!("/srv/{project_name}/."))
             .output().await?;
         debug!("building docker image for /srv/{project_name}");
         debug!("remote command: {:?}", suffix);
