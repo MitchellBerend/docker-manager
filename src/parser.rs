@@ -7,7 +7,7 @@ use futures::{stream, StreamExt};
 use log::{info, debug, error, warn};
 use anyhow::Result;
 use regex;
-use crate::functions::{send_command_node};
+use crate::functions::{send_command_node, get_memory_information};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 use crate::structs::NodeMemory;
 
@@ -317,44 +317,7 @@ impl MainParser {
         // get all resources of nodes
         info!("searching nodes: {:?}", &nodes);
         debug!("running docker ps");
-        let mut _ret: Vec<String> = vec!();
-        let bodies = stream::iter(nodes)
-            .map(|node| async move  {
-                let mut return_str = String::new();
-                debug!("connecting to {node}");
-                let session = openssh::SessionBuilder::default()
-                    .connect_timeout(std::time::Duration::new(1, 0))
-                    .connect(&node)
-                    .await.unwrap();
-                let mut return_value = NodeMemory::default();
-                let mut output = session.command("sudo");
-                output.arg("cat")
-                    .arg("/proc/meminfo");
-                match output.output().await {
-                    Ok(output) => {
-                        let memory_regex = regex::Regex::new(&format!(r"MemTotal.*\nMemFree.*")).unwrap();
-                        let regex_iter = memory_regex.find_iter(from_utf8(&output.stdout).unwrap());
-                        for _match in regex_iter {
-                            return_str.push_str(_match.as_str());
-                            return_str.push('\n');
-                            let placeholder = &_match.as_str().split_once("\n").unwrap();
-                            let memtotal = placeholder.0.split_whitespace().nth(1).unwrap();
-                            let memfree = placeholder.1.split_whitespace().nth(1).unwrap();
-                            return_value = NodeMemory {
-                                node: node.clone(),
-                                memtotal: str::parse::<u64>(memtotal).unwrap(),
-                                memfree:str::parse::<u64>(memfree).unwrap(),
-                            }
-                            
-                        }
-                    }
-                    Err(e) => {
-                        error!("{}", e)
-                    }
-                }
-                return_value
-            }).buffer_unordered(CONCURRENT_REQUESTS);
-        let results = bodies.collect::<Vec<NodeMemory>>().await;
+        let results = get_memory_information(nodes, CONCURRENT_REQUESTS).await;
 
         // decide which node is going to run the container
         let mut _picked_node: Option<NodeMemory> = Option::None;
