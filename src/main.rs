@@ -15,12 +15,16 @@
 //      This will stop a specified container on a specified node
 // rm (done)
 //      This will remove a specified container on a specified node
-// image (done)
+// images (done)
 //      This will show all images on a node
 // info (done)
 //      This will show docker info of all nodes
 // start (done)
 //      This will start a container on a specific node
+// deploy (done)
+//      This will copy a dockerfile to an automatically picked node and build the image
+// inspect (done)
+//      This gives low level information on a specified container
 
 // TODO 
 // Add proper debug logging (done)
