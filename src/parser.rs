@@ -6,7 +6,6 @@ use clap::Parser;
 use futures::{stream, StreamExt};
 use log::{info, debug, error, warn};
 use anyhow::Result;
-use regex;
 use crate::functions::{send_command_node, get_memory_information};
 use crate::{dockercommand::DockerCommand, functions::send_command_node_container};
 use crate::structs::NodeMemory;
@@ -44,7 +43,7 @@ impl MainParser {
     async fn send_async_command(&self,nodes: &[String], commands: &[String]) -> Vec<String> {
         let bodies = stream::iter(nodes)
         .map(|node| async move {
-            send_command_node(node.clone(), &commands).await
+            send_command_node(node.clone(), commands).await
         }).buffer_unordered(CONCURRENT_REQUESTS);
         bodies.collect::<Vec<String>>().await
     }
@@ -53,7 +52,7 @@ impl MainParser {
         info!("searching nodes: {:?}", &nodes);
         debug!("running docker ps");
         let commands: [String; 2] = ["ps".to_string(), "-a".to_string()];
-        let results = self.send_async_command(&nodes, &commands).await;
+        let results = self.send_async_command(nodes, &commands).await;
         for result in results {
             println!("{result}");
         }
@@ -259,20 +258,20 @@ impl MainParser {
     }
 
     pub async fn send_images_command(&self, nodes: &[String]) {
-        info!("searching nodes: {:#?}", &nodes);
+        info!("searching nodes: {:#?}", nodes);
         debug!("running docker image ls");
         let commands: [String; 1] = ["images".to_string()];
-        let results = self.send_async_command(&nodes, &commands).await;
+        let results = self.send_async_command(nodes, &commands).await;
         for result in results {
             println!("{result}");
         }
     }
 
     pub async fn send_info_command(&self, nodes: &[String]) {
-        info!("searching nodes: {:?}", &nodes);
+        info!("searching nodes: {:?}", nodes);
         debug!("running docker info");
         let commands: [String; 1] = ["info".to_string()];
-        let results = self.send_async_command(&nodes, &commands).await;
+        let results = self.send_async_command(nodes, &commands).await;
         for result in results {
             println!("{result}");
         }
@@ -315,7 +314,7 @@ impl MainParser {
 
     pub async fn send_deploy_command(&self, nodes: &[String], project_name: String, file: String) -> Result<()> {
         // get all resources of nodes
-        info!("searching nodes: {:?}", &nodes);
+        info!("searching nodes: {:?}", nodes);
         debug!("running docker ps");
         let results = get_memory_information(nodes, CONCURRENT_REQUESTS).await;
 
@@ -326,9 +325,9 @@ impl MainParser {
             let memtotal = result.memtotal;
             let memfree = result.memfree;
             let new_node = Some(NodeMemory {
-                node: node,
-                memtotal: memtotal,
-                memfree: memfree,
+                node,
+                memtotal,
+                memfree,
             });
             debug!("\nhost:\t\t{}\nMemTotal:\t{memtotal}\nMemFree\t\t{memfree}\n", &result.node);
             match _picked_node {
@@ -362,7 +361,7 @@ impl MainParser {
 
         // copy the config file to the target node
         let mut local_shell = std::process::Command::new("scp");
-        local_shell.arg(format!("{file}"))
+        local_shell.arg(file.to_string())
             .arg(format!("{}:~/", &picked_node.node));
         let local_output = local_shell.output()?;
         debug!("moving {file} to {}", &picked_node.node);

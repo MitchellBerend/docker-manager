@@ -122,7 +122,7 @@ pub async fn get_memory_information(nodes: &[String], concurrent_requests: usize
                 debug!("running cat /proc/meminfo on {}", &node);
                 match output.output().await {
                     Ok(output) => {
-                        let memory_regex = regex::Regex::new(&format!(r"MemTotal.*\nMemFree.*")).unwrap();
+                        let memory_regex = regex::Regex::new(r"MemTotal.*\nMemFree.*").unwrap();
                         let regex_iter = memory_regex.find_iter(from_utf8(&output.stdout).unwrap());
                         for _match in regex_iter {
                             return_str.push_str(_match.as_str());
