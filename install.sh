@@ -31,3 +31,4 @@ if [ $CARGO_INSTALLED == 1 ]
 then
 	echo "y" | rustup self uninstall
 fi
+source docker-manager.bash
