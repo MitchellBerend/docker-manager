@@ -332,7 +332,7 @@ impl MainParser {
             debug!("\nhost:\t\t{}\nMemTotal:\t{memtotal}\nMemFree\t\t{memfree}\n", &result.node);
             match _picked_node {
                 Some(ref _node) => {
-                    if _node.memtotal - _node.memfree < memtotal - memfree {
+                    if _node.memtotal - _node.memfree > memtotal - memfree {
                         _picked_node = new_node;
                     } else {}
                 },
