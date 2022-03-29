@@ -55,8 +55,9 @@ pub async fn send_command_node_container(command: String, node: String, containe
                 String::from(from_utf8(&output.stderr)?)
             );
         }
-        Err(_) => {
+        Err(e) => {
             error!("Running check since there was a connection error with node: {node}");
+            error!("{}", e);
             let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::from_secs(1))
             .connect(&node).await?;
@@ -88,8 +89,9 @@ pub async fn send_command_node(node: String, commands: &[String]) -> String {
                 }
             }
         }
-        Err(_) => {
+        Err(e) => {
             error!("Running check since there was a connection error with node: {node}");
+            error!("{}", e);
             println!("Could not connect to {node}");
         }
     }
