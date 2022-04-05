@@ -20,7 +20,7 @@ pub fn get_nodes(regex: String) -> Result<Vec<String>> {
     ssh_conf_file.read_to_end(&mut config_buf)?;
     let config_str: String = String::from(from_utf8(&config_buf)?);
     debug!("regex pattern: ^Host {regex}");
-    let hostname_regex = regex::Regex::new(&format!(r"[^#]Host {}", &regex))?;
+    let hostname_regex = regex::Regex::new(&format!(r###"[^#]Host {}"###, &regex))?;
     let regex_iter = hostname_regex.find_iter(&config_str);
     let mut nodes: Vec<String> = vec![];
         for host in regex_iter {
@@ -62,7 +62,7 @@ pub async fn send_command_node_container(command: String, node: String, containe
             .connect_timeout(std::time::Duration::from_secs(1))
             .connect(&node).await?;
             let _ = session.check().await?;
-            println!("Could not connect to {node}");
+            error!("Could not connect to {node}");
         }
     }
     Ok(())
@@ -124,7 +124,7 @@ pub async fn get_memory_information(nodes: &[String], concurrent_requests: usize
                 debug!("running cat /proc/meminfo on {}", &node);
                 match output.output().await {
                     Ok(output) => {
-                        let memory_regex = regex::Regex::new(r"MemTotal.*\nMemFree.*").unwrap();
+                        let memory_regex = regex::Regex::new(r###"MemTotal.*\nMemFree.*"###).unwrap();
                         let regex_iter = memory_regex.find_iter(from_utf8(&output.stdout).unwrap());
                         for _match in regex_iter {
                             return_str.push_str(_match.as_str());

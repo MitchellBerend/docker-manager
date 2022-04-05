@@ -120,7 +120,7 @@ impl MainParser {
                 );
             }
             Err(_) => {
-                println!("Could not connect to {_node}");
+                error!("Could not connect to {_node}");
             }
         }
         Ok(())
@@ -198,7 +198,7 @@ impl MainParser {
                 );
             }
             Err(_) => {
-                println!("Could not connect to {_node}");
+                error!("Could not connect to {_node}");
             }
         }
         Ok(())
