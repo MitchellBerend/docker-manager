@@ -77,10 +77,9 @@ impl MainParser {
     }
 
     pub async fn send_exec_command(&self) -> Result<()> {
-        let mut _node: String = String::new();
-        let mut _container: String = String::new();
-        let mut _command: String = String::new();
-        debug!("running docker exec on {_container}");
+        let mut _node: String;
+        let mut _container: String;
+        let mut _command: String;
         match &self.command {
             DockerCommand::Exec {
                 node,
@@ -96,6 +95,7 @@ impl MainParser {
                 panic!("error in send_log_command")
             },
         };
+        debug!("running docker exec on {_container}");
         debug!("connecting to {_node}");
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
@@ -127,13 +127,12 @@ impl MainParser {
     }
 
     pub async fn send_run_command(&self) -> Result<()> {
-        let mut _node: String = String::new();
-        let mut _image: String = String::new();
-        let mut _name: String = String::new();
-        let mut _port: String = String::new();
-        let mut _restart: String = String::new();
-        let mut _env: Vec<String> = vec!();
-        debug!("running docker run on {_node}");
+        let mut _node: String;
+        let mut _image: String;
+        let mut _name: String;
+        let mut _port: String;
+        let mut _restart: String;
+        let mut _env: Vec<String>;
         match &self.command {
             DockerCommand::Run {
                 node,
@@ -155,6 +154,7 @@ impl MainParser {
                 panic!("error in send_log_command")
             },
         };
+        debug!("running docker run on {_node}");
         debug!("connecting to {_node}");
         let session = openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
