@@ -171,7 +171,7 @@ impl MainParser {
                 let _ = &output.arg("docker").arg("run").arg("-d");
                 if !&_port.is_empty() {
                     let _ = &output.arg("-p");
-                    let _ = &output.arg((&_port).to_string());
+                    let _ = &output.arg(&_port);
                 }
                 if !&_name.is_empty() {
                     let _ = &output.arg("--name");
@@ -372,7 +372,7 @@ impl MainParser {
         // copy the config file to the target node
         let mut local_shell = std::process::Command::new("scp");
         local_shell
-            .arg(file.to_string())
+            .arg(&file)
             .arg(format!("{}:~/", &picked_node.node));
         let local_output = local_shell.output()?;
         debug!("moving {file} to {}", &picked_node.node);

@@ -23,7 +23,7 @@ pub fn get_nodes(regex: String) -> Result<Vec<String>> {
     let regex_iter = hostname_regex.find_iter(&config_str);
     let mut nodes: Vec<String> = vec![];
     for host in regex_iter {
-        nodes.push(String::from(host.as_str().split_once(" ").unwrap().1));
+        nodes.push(String::from(host.as_str().split_once(' ').unwrap().1));
     }
     Ok(nodes)
 }
@@ -136,7 +136,7 @@ pub async fn get_memory_information(
                     for _match in regex_iter {
                         return_str.push_str(_match.as_str());
                         return_str.push('\n');
-                        let placeholder = &_match.as_str().split_once("\n").unwrap();
+                        let placeholder = &_match.as_str().split_once('\n').unwrap();
                         let memtotal = placeholder.0.split_whitespace().nth(1).unwrap();
                         let memfree = placeholder.1.split_whitespace().nth(1).unwrap();
                         return_value = NodeMemory {
