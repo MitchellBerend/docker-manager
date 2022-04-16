@@ -144,5 +144,5 @@ pub enum DockerCommand {
         /// The file that needs to be deployed.
         #[clap()]
         file: String,
-    }
+    },
 }
