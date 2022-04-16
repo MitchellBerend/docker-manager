@@ -395,13 +395,17 @@ impl MainParser {
         debug!("remote command: {:?}", suffix);
         debug!("stdout: {}", from_utf8(&output.stdout)?);
         debug!("stderr: {}", from_utf8(&output.stderr)?);
-
-        warn!("
-        This does not actually deploy the image yet.
-        You need to manually run the image.
-        It the image name is the name of the project and the tag is latest.
-        run the following command to actually run the image on that node:\n
-            docker-manager run {} {}:latest\n", picked_node.node, project_name);
+        debug!("status: {:?}", &output.status.code());
+        if output.status.code() != Some(0) {
+            error!("stderr: {}", from_utf8(&output.stderr)?);
+        } else {
+            warn!("
+This does not actually deploy the image yet.
+You need to manually run the image.
+It the image name is the name of the project and the tag is latest.
+run the following command to actually run the image on that node:\n
+    docker-manager run {} {}:latest\n", picked_node.node, project_name);
+        }
         Ok(())
     }
 }
