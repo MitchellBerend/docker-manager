@@ -208,9 +208,12 @@ mod tests {
         let mut ssh_conf_file = std::fs::File::create(path)?;
         let buf: Vec<u8> = "
 Host test_host_1
+    User root
+    Port 22
 Host test_host_2
+asdfasd
 #Host test_host_3
-Host prod_host_1
+Host prod_host_1\n
 Host prod_host_2
 Host prod_host_3
 Host prod_host_4
