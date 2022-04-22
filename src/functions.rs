@@ -206,11 +206,11 @@ Host test_host_4\n".into();
                 let mut _path = std::env::var("HOME")?;
                 _path.push_str("/.ssh/config");
                 std::fs::copy(&path, &_path)?;
+                // remove ~/.ssh/config.bak
+                std::fs::remove_file(&path)?;
             }
             Err(_) => {}
         }
-        // remove ~/.ssh/config.bak
-        std::fs::remove_file(&path)?;
         Ok(())
     }
 
