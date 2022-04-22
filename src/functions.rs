@@ -169,6 +169,23 @@ mod tests {
     use anyhow::Result;
     use std::io::Write;
 
+    // Test setup
+    fn clean_up_get_nodes() -> Result<()> {
+        let mut path = std::env::var("HOME")?;
+        path.push_str("/.ssh/config.bak");
+        match std::fs::File::open(&path) {
+            Ok(_) => {
+                let mut _path = std::env::var("HOME")?;
+                _path.push_str("/.ssh/config");
+                std::fs::copy(&path, &_path)?;
+                // remove ~/.ssh/config.bak
+                std::fs::remove_file(&path)?;
+            }
+            Err(_) => {}
+        }
+        Ok(())
+    }
+
     fn setup_get_nodes() -> Result<()> {
         let mut path = std::env::var("HOME")?;
         path.push_str("/.ssh/config");
@@ -190,27 +207,35 @@ mod tests {
         
         let mut ssh_conf_file = std::fs::File::create(path)?;
         let buf: Vec<u8> = "
-Host test_host_1\n
-Host test_host_2\n
-#Host test_host_3\n
-Host test_host_4\n".into();
+Host test_host_1
+Host test_host_2
+#Host test_host_3
+Host prod_host_1
+Host prod_host_2
+Host prod_host_3
+Host prod_host_4
+Host test_host_4".into();
         ssh_conf_file.write_all(&buf)?;
         Ok(())
     }
 
-    fn clean_up_get_nodes() -> Result<()> {
-        let mut path = std::env::var("HOME")?;
-        path.push_str("/.ssh/config.bak");
-        match std::fs::File::open(&path) {
-            Ok(_) => {
-                let mut _path = std::env::var("HOME")?;
-                _path.push_str("/.ssh/config");
-                std::fs::copy(&path, &_path)?;
-                // remove ~/.ssh/config.bak
-                std::fs::remove_file(&path)?;
-            }
-            Err(_) => {}
-        }
+
+    // Tests 
+    #[test]
+    fn test_get_nodes_prod() -> Result<()> {
+        setup_get_nodes()?;
+        let prepped_nodes: Vec<String> = vec![
+            "prod_host_1".into(),
+            "prod_host_2".into(),
+            "prod_host_3".into(),
+            "prod_host_4".into(),
+        ];
+        let nodes: Vec<String> = get_nodes(r##".*prod_host_\d"##.into())?;
+        println!("{:#?}", prepped_nodes);
+        println!("{:#?}", nodes);
+
+        assert_eq!(nodes, prepped_nodes);
+        clean_up_get_nodes()?;
         Ok(())
     }
 
@@ -220,6 +245,10 @@ Host test_host_4\n".into();
         let prepped_nodes: Vec<String> = vec![
             "test_host_1".into(),
             "test_host_2".into(),
+            "prod_host_1".into(),
+            "prod_host_2".into(),
+            "prod_host_3".into(),
+            "prod_host_4".into(),
             "test_host_4".into(),
         ];
         let nodes: Vec<String> = get_nodes(".*".into())?;
@@ -230,16 +259,4 @@ Host test_host_4\n".into();
         clean_up_get_nodes()?;
         Ok(())
     }
-
-    // #[test]
-    // fn test_send_command_node_container() {}
-
-    // #[test]
-    // fn test_send_command_node() {}
-
-    // #[test]
-    // fn test_build_output() {}
-
-    // #[test]
-    // fn test_get_memory_information() {}
 }
