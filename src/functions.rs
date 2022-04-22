@@ -155,3 +155,91 @@ pub async fn get_memory_information(
         .buffer_unordered(concurrent_requests);
     bodies.collect::<Vec<NodeMemory>>().await
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        get_nodes,
+        // send_command_node_container,
+        // send_command_node,
+        // build_output,
+        // get_memory_information,
+    };
+    use anyhow::Result;
+    use std::io::Write;
+
+    fn setup_get_nodes() -> Result<()> {
+        let mut path = std::env::var("HOME")?;
+        path.push_str("/.ssh/config");
+
+        let mut dir = std::env::var("HOME")?;
+        dir.push_str("/.ssh");
+        std::fs::create_dir_all(dir)?;
+
+        println!("{}", path);
+        // if there is already a ~/.ssh/config move it to ~/.ssh/config.bak
+        match std::fs::File::open(&path) {
+            Ok(_) => {
+                let mut _path = std::env::var("HOME")?;
+                _path.push_str("/.ssh/config.bak");
+                std::fs::copy(&path, &_path)?;
+            }
+            Err(_) => {}
+        }
+        
+        let mut ssh_conf_file = std::fs::File::create(path)?;
+        let buf: Vec<u8> = "
+Host test_host_1\n
+Host test_host_2\n
+#Host test_host_3\n
+Host test_host_4\n".into();
+        ssh_conf_file.write_all(&buf)?;
+        Ok(())
+    }
+
+    fn clean_up_get_nodes() -> Result<()> {
+        let mut path = std::env::var("HOME")?;
+        path.push_str("/.ssh/config.bak");
+        match std::fs::File::open(&path) {
+            Ok(_) => {
+                let mut _path = std::env::var("HOME")?;
+                _path.push_str("/.ssh/config");
+                std::fs::copy(&path, &_path)?;
+            }
+            Err(_) => {}
+        }
+        // remove ~/.ssh/config.bak
+        std::fs::remove_file(&path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_nodes() -> Result<()> {
+        setup_get_nodes()?;
+        let prepped_nodes: Vec<String> = vec![
+            "test_host_1".into(),
+            "test_host_2".into(),
+            "test_host_4".into(),
+        ];
+        let nodes: Vec<String> = get_nodes(".*".into())?;
+        println!("{:#?}", prepped_nodes);
+        println!("{:#?}", nodes);
+
+        assert_eq!(nodes, prepped_nodes);
+        clean_up_get_nodes()?;
+        Ok(())
+    }
+
+    // #[test]
+    // fn test_send_command_node_container() {}
+
+    // #[test]
+    // fn test_send_command_node() {}
+
+    // #[test]
+    // fn test_build_output() {}
+
+    // #[test]
+    // fn test_get_memory_information() {}
+}
