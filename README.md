@@ -1,4 +1,4 @@
-[![Rust](https://github.com/MitchellBerend/docker-manager/actions/workflows/rust.yml/badge.svg?branch=master&event=status)](https://github.com/MitchellBerend/docker-manager/actions/workflows/rust.yml)
+[![Rust](https://github.com/MitchellBerend/docker-manager/actions/workflows/rust.yml/badge.svg?branch=master&event=push)](https://github.com/MitchellBerend/docker-manager/actions/workflows/rust.yml)
 
 - [Intro](#intro)
 - [Usage](#usage)
