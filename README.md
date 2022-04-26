@@ -1,3 +1,5 @@
+[![Rust](https://github.com/MitchellBerend/docker-manager/actions/workflows/rust.yml/badge.svg?branch=master&event=status)](https://github.com/MitchellBerend/docker-manager/actions/workflows/rust.yml)
+
 - [Intro](#intro)
 - [Usage](#usage)
   - [Install](#install)

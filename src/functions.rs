@@ -224,9 +224,8 @@ Host test_host_4".into();
 
 
     // Tests 
-    #[test]
+    //#[test]
     fn test_get_nodes_prod() -> Result<()> {
-        setup_get_nodes()?;
         let prepped_nodes: Vec<String> = vec![
             "prod_host_1".into(),
             "prod_host_2".into(),
@@ -238,13 +237,11 @@ Host test_host_4".into();
         println!("{:#?}", nodes);
 
         assert_eq!(nodes, prepped_nodes);
-        clean_up_get_nodes()?;
         Ok(())
     }
 
-    #[test]
+    // #[test]
     fn test_get_nodes() -> Result<()> {
-        setup_get_nodes()?;
         let prepped_nodes: Vec<String> = vec![
             "test_host_1".into(),
             "test_host_2".into(),
@@ -259,6 +256,18 @@ Host test_host_4".into();
         println!("{:#?}", nodes);
 
         assert_eq!(nodes, prepped_nodes);
+        Ok(())
+    }
+
+    // This is the main test function that tests all file operations.
+    // It is done this way to prevent set up and tear down of the config multiple
+    // times but also to prevent multiple tests from modifying the same file at
+    // the same time.
+    #[test]
+    fn test_main() -> Result<()> {
+        setup_get_nodes()?;
+        test_get_nodes()?;
+        test_get_nodes_prod()?;
         clean_up_get_nodes()?;
         Ok(())
     }
