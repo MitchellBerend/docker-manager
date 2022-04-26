@@ -14,5 +14,6 @@ impl log::Log for MyLogger {
             println!("{} - {}", record.level(), record.args());
         }
     }
+
     fn flush(&self) {}
 }
