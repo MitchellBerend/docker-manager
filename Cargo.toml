@@ -13,6 +13,7 @@ regex = "1.5"
 futures = "0.3"
 log = "0.4"
 anyhow = "1.0.53"
+ctrlc = { version = "3.2", features = [ "termination" ] }
 
 [profile.release]
 lto = true
