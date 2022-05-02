@@ -30,6 +30,8 @@
 // Add proper debug logging (done)
 
 use std::error::Error;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 use clap::Parser;
 use dockercommand::DockerCommand;
@@ -43,99 +45,112 @@ mod structs;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let mut running = Arc::new(AtomicBool::new(true));
+    let r = running.clone();
+
+    ctrlc::set_handler(move || {
+        r.store(false, Ordering::SeqCst);
+    }).expect("Error setting Ctrl-C handler");
+
     let args = parser::MainParser::parse();
     log::set_logger(&logger::MY_LOGGER).unwrap();
 
-    match args.level {
-        parser::Level::Debug => {
-            log::set_max_level(LevelFilter::Debug);
+    while running.load(Ordering::SeqCst) {
+        match args.level {
+            parser::Level::Debug => {
+                log::set_max_level(LevelFilter::Debug);
+            }
+            parser::Level::Info => {
+                log::set_max_level(LevelFilter::Info);
+            }
+            parser::Level::Warning => {
+                log::set_max_level(LevelFilter::Warn);
+            }
+            parser::Level::Error => {
+                log::set_max_level(LevelFilter::Error);
+            }
         }
-        parser::Level::Info => {
-            log::set_max_level(LevelFilter::Info);
+
+        match args.command {
+            DockerCommand::Ps { ref regex } => {
+                let nodes = functions::get_nodes(regex.clone())?;
+                args.send_ps_command(&nodes).await;
+            }
+            DockerCommand::Exec {
+                node: _,
+                container: _,
+                command: _,
+            } => {
+                args.send_exec_command().await?;
+            }
+            DockerCommand::Logs {
+                node: _,
+                container: _,
+            } => {
+                args.send_log_command().await?;
+            }
+            DockerCommand::Run {
+                node: _,
+                image: _,
+                name: _,
+                port: _,
+                restart: _,
+                env: _,
+            } => {
+                args.send_run_command().await?;
+            }
+            DockerCommand::Stop {
+                node: _,
+                container: _,
+            } => {
+                args.send_stop_command().await?;
+            }
+            DockerCommand::Rm {
+                node: _,
+                container: _,
+            } => {
+                args.send_rm_command().await?;
+            }
+            DockerCommand::Inspect {
+                node: _,
+                container: _,
+            } => {
+                args.send_inspect_command().await?;
+            }
+            DockerCommand::Images { ref regex } => {
+                let nodes = functions::get_nodes(regex.clone())?;
+                args.send_images_command(&nodes).await;
+            }
+            DockerCommand::Info { ref regex } => {
+                let nodes = functions::get_nodes(regex.clone())?;
+                args.send_info_command(&nodes).await;
+            }
+            DockerCommand::Top {
+                node: _,
+                container: _,
+            } => {
+                args.send_top_command().await?;
+            }
+            DockerCommand::Start {
+                node: _,
+                container: _,
+            } => {
+                args.send_start_command().await?;
+            }
+            DockerCommand::Deploy {
+                ref regex,
+                ref project_name,
+                ref file,
+            } => {
+                let nodes = functions::get_nodes(regex.clone())?;
+                args.send_deploy_command(&nodes, project_name.clone(), file.clone())
+                    .await?;
+            }
         }
-        parser::Level::Warning => {
-            log::set_max_level(LevelFilter::Warn);
-        }
-        parser::Level::Error => {
-            log::set_max_level(LevelFilter::Error);
-        }
+        running = Arc::new(AtomicBool::new(false));
     }
 
-    match args.command {
-        DockerCommand::Ps { ref regex } => {
-            let nodes = functions::get_nodes(regex.clone())?;
-            args.send_ps_command(&nodes).await;
-        }
-        DockerCommand::Exec {
-            node: _,
-            container: _,
-            command: _,
-        } => {
-            args.send_exec_command().await?;
-        }
-        DockerCommand::Logs {
-            node: _,
-            container: _,
-        } => {
-            args.send_log_command().await?;
-        }
-        DockerCommand::Run {
-            node: _,
-            image: _,
-            name: _,
-            port: _,
-            restart: _,
-            env: _,
-        } => {
-            args.send_run_command().await?;
-        }
-        DockerCommand::Stop {
-            node: _,
-            container: _,
-        } => {
-            args.send_stop_command().await?;
-        }
-        DockerCommand::Rm {
-            node: _,
-            container: _,
-        } => {
-            args.send_rm_command().await?;
-        }
-        DockerCommand::Inspect {
-            node: _,
-            container: _,
-        } => {
-            args.send_inspect_command().await?;
-        }
-        DockerCommand::Images { ref regex } => {
-            let nodes = functions::get_nodes(regex.clone())?;
-            args.send_images_command(&nodes).await;
-        }
-        DockerCommand::Info { ref regex } => {
-            let nodes = functions::get_nodes(regex.clone())?;
-            args.send_info_command(&nodes).await;
-        }
-        DockerCommand::Top {
-            node: _,
-            container: _,
-        } => {
-            args.send_top_command().await?;
-        }
-        DockerCommand::Start {
-            node: _,
-            container: _,
-        } => {
-            args.send_start_command().await?;
-        }
-        DockerCommand::Deploy {
-            ref regex,
-            ref project_name,
-            ref file,
-        } => {
-            let nodes = functions::get_nodes(regex.clone())?;
-            args.send_deploy_command(&nodes, project_name.clone(), file.clone())
-                .await?;
-        }
-    }
+    log::debug!("Starting clean up");
+
     Ok(())
 }
