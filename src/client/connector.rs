@@ -14,7 +14,7 @@ impl Client {
         let file_contents = std::fs::read_to_string(config_path).unwrap_or_else(|_| "".into());
         let mut nodes: Vec<Node> = vec![];
         for line in file_contents.split('\n') {
-            if !line.contains('#') && line.contains("Host") {
+            if !line.contains('#') && line.starts_with("Host") {
                 let s: String = line.replace("  ", "").split(' ').nth(1).unwrap().into();
                 nodes.push(Node::new(s))
             }
