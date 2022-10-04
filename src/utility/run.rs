@@ -52,7 +52,7 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                 .collect::<Vec<(String, String)>>();
             if node_containers.len() == 1 {
                 // unwrap is safe here since we .unwrap()check if there is exactly 1 element
-                let node_tuple = node_containers.get(1).unwrap().to_owned();
+                let node_tuple = node_containers.get(0).unwrap().to_owned();
                 let node = Node::new(node_tuple.1);
                 match node.run_command(Command::Stop { container_id }).await {
                     Ok(s) => return vec![Ok(s)],
