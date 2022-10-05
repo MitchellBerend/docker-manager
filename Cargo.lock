@@ -95,7 +95,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "docker-mananger"
+name = "docker-manager"
 version = "0.1.0"
 dependencies = [
  "clap",
