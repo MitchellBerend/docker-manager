@@ -28,8 +28,8 @@ pub enum Command {
         /// Container name or id
         container_id: String,
 
-//        /// Follow the log output
-//        #[arg(short, long)]
-//        follow: bool,
+        /// Follow the log output
+        #[arg(short, long)]
+        follow: bool,
     },
 }

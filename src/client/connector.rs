@@ -65,9 +65,10 @@ impl Node {
             }
             Command::Logs {
                 container_id,
-//                follow,
+                follow,
             } => {
-                match command::run_logs(self.address.clone(), session, container_id).await { //, follow).await {
+                match command::run_logs(self.address.clone(), session, container_id, follow).await {
+                    //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
