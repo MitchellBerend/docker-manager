@@ -95,6 +95,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "docker-mananger"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "futures",
+ "openssh",
+ "tokio",
+]
+
+[[package]]
 name = "fastrand"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -419,16 +429,6 @@ dependencies = [
  "getrandom",
  "redox_syscall",
  "thiserror",
-]
-
-[[package]]
-name = "refactor"
-version = "0.1.0"
-dependencies = [
- "clap",
- "futures",
- "openssh",
- "tokio",
 ]
 
 [[package]]
