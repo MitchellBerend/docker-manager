@@ -56,9 +56,18 @@ impl Node {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
-            },
+            }
             Command::Stop { container_id } => {
                 match command::run_stop(self.address.clone(), session, container_id).await {
+                    Ok(result) => Ok(result),
+                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
+            }
+            Command::Logs {
+                container_id,
+//                follow,
+            } => {
+                match command::run_logs(self.address.clone(), session, container_id).await { //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }

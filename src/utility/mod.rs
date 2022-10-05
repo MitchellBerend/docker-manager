@@ -1,4 +1,6 @@
 pub mod command;
+mod other;
 mod run;
 
+pub use other::find_container;
 pub use run::run_command;

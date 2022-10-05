@@ -8,7 +8,7 @@ pub struct App {
     pub command: Command,
 }
 
-#[derive(Subcommand)]
+#[derive(Clone, Subcommand)]
 pub enum Command {
     /// Lists all containers on remote nodes
     Ps {
@@ -21,5 +21,15 @@ pub enum Command {
     Stop {
         /// Container name or id
         container_id: String,
+    },
+
+    /// Gets the logs of a given container unless 2 or more containers are found on remote nodes
+    Logs {
+        /// Container name or id
+        container_id: String,
+
+//        /// Follow the log output
+//        #[arg(short, long)]
+//        follow: bool,
     },
 }
