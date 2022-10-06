@@ -14,7 +14,7 @@ impl Client {
 
         let mut nodes: Vec<Node> = vec![];
         for line in file_contents.split('\n') {
-            if !line.contains('#') && line.starts_with("Hostname") {
+            if !line.contains('#') && line.starts_with("Host") {
                 let s: String = line.replace("  ", "").split(' ').nth(1).unwrap().into();
                 nodes.push(Node::new(s))
             }
