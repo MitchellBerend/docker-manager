@@ -56,12 +56,6 @@ pub async fn run_logs(
     session: openssh::Session,
     container_id: String,
     flags: LogsFlags,
-    //details: bool,
-    //follow: bool,
-    //since: Option<String>,
-    //tail: Option<String>,
-    //timestamps: bool,
-    //until: Option<String>,
 ) -> Result<String, openssh::Error> {
     let mut command: Vec<String> = vec!["docker".into(), "logs".into()];
 
