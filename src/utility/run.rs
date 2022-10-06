@@ -7,7 +7,11 @@ use crate::client::{Client, Node, NodeError};
 use crate::utility::find_container;
 
 pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> {
-    let client = Client::from_config();
+    let config_path = format!(
+        "{}/.ssh/config",
+        std::env::var("HOME").unwrap_or_else(|_| "/home/root".into())
+    );
+    let client = Client::from_config(config_path);
 
     match command {
         Command::Ps { all } => {
@@ -111,5 +115,30 @@ impl std::fmt::Display for CommandError {
             ),
             Self::NodeError(node_error) => write!(f, "{}", node_error),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::CommandError;
+
+    #[test]
+    fn test_command_error_multiple_found_diplay() {
+        let error = CommandError::MutlipleNodesFound(vec!["abc".into(), "def".into()]);
+
+        let correct_string: String =
+            "Multiple nodes found with matching criteria:\n[\n    \"abc\",\n    \"def\",\n]".into();
+
+        assert_eq!(correct_string, format!("{}", error));
+    }
+
+    #[test]
+    fn test_command_error_no_node_found_diplay() {
+        let error = CommandError::NoNodesFound("some_container_id".into());
+
+        let correct_string: String =
+            "No node found containing the following container: some_container_id".into();
+
+        assert_eq!(correct_string, format!("{}", error));
     }
 }
