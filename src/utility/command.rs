@@ -42,16 +42,53 @@ pub async fn run_stop(
     Ok(rv)
 }
 
+pub struct LogsFlags {
+    pub details: bool,
+    pub follow: bool,
+    pub since: Option<String>,
+    pub tail: Option<String>,
+    pub timestamps: bool,
+    pub until: Option<String>,
+}
+
 pub async fn run_logs(
     hostname: String,
     session: openssh::Session,
     container_id: String,
-    follow: bool,
+    flags: LogsFlags,
+    //details: bool,
+    //follow: bool,
+    //since: Option<String>,
+    //tail: Option<String>,
+    //timestamps: bool,
+    //until: Option<String>,
 ) -> Result<String, openssh::Error> {
-    let mut command = vec!["docker", "logs"];
-    if follow {
-        command.push("-f");
-        command.push(&container_id);
+    let mut command: Vec<String> = vec!["docker".into(), "logs".into()];
+
+    if flags.details {
+        command.push("--details".into());
+    }
+
+    if flags.timestamps {
+        command.push("--timestamps".into());
+    }
+
+    if let Some(s) = flags.since {
+        command.push("--since".into());
+        command.push(s);
+    }
+    if let Some(s) = flags.tail {
+        command.push("--tail".into());
+        command.push(s);
+    }
+    if let Some(s) = flags.until {
+        command.push("--until".into());
+        command.push(s);
+    }
+
+    if flags.follow {
+        command.push("-f".into());
+        command.push(container_id);
 
         let mut output = match session.command("sudo").args(command).spawn().await {
             Ok(output) => output,
@@ -63,7 +100,7 @@ pub async fn run_logs(
             };
         }
     } else {
-        command.push(&container_id);
+        command.push(container_id);
 
         let output = match session.command("sudo").args(command).output().await {
             Ok(output) => output,

@@ -53,7 +53,12 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
         }
         Command::Logs {
             container_id,
+            details,
             follow,
+            since,
+            tail,
+            timestamps,
+            until,
         } => {
             let node_containers: Vec<(String, String)> =
                 find_container(client, &container_id).await;
@@ -68,7 +73,12 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     match node
                         .run_command(Command::Logs {
                             container_id,
+                            details,
                             follow,
+                            since,
+                            tail,
+                            timestamps,
+                            until,
                         })
                         .await
                     {

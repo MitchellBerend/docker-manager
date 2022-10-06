@@ -14,7 +14,7 @@ impl Client {
 
         let mut nodes: Vec<Node> = vec![];
         for line in file_contents.split('\n') {
-            if !line.contains('#') && line.starts_with("Hostname") {
+            if !line.contains('#') && line.starts_with("Host") {
                 let s: String = line.replace("  ", "").split(' ').nth(1).unwrap().into();
                 nodes.push(Node::new(s))
             }
@@ -66,9 +66,23 @@ impl Node {
             }
             Command::Logs {
                 container_id,
+                details,
                 follow,
+                since,
+                tail,
+                timestamps,
+                until,
             } => {
-                match command::run_logs(self.address.clone(), session, container_id, follow).await {
+                let flags = command::LogsFlags {
+                    details,
+                    follow,
+                    since,
+                    tail,
+                    timestamps,
+                    until,
+                };
+
+                match command::run_logs(self.address.clone(), session, container_id, flags).await {
                     //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
