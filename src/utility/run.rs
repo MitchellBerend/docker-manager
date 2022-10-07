@@ -14,10 +14,35 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
     let client = Client::from_config(config_path);
 
     match command {
-        Command::Ps { all } => {
+        Command::Ps {
+            all,
+            filter,
+            format,
+            last,
+            latests,
+            no_trunc,
+            quiet,
+            size,
+        } => {
             let bodies = stream::iter(client.nodes_info())
-                .map(|(_, node)| async move {
-                    match node.run_command(Command::Ps { all }).await {
+                .map(|(_, node)| async {
+                    let _filter: Option<String> =
+                        filter.as_ref().map(|filter| String::from(&filter.clone()));
+                    let _format: Option<String> =
+                        format.as_ref().map(|format| String::from(&format.clone()));
+                    match node
+                        .run_command(Command::Ps {
+                            all,
+                            filter: _filter,
+                            format: _format,
+                            last,
+                            latests,
+                            no_trunc,
+                            quiet,
+                            size,
+                        })
+                        .await
+                    {
                         Ok(result) => Ok(result),
                         Err(e) => Err(CommandError::NodeError(e)),
                     }
