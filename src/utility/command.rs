@@ -1,12 +1,15 @@
+use crate::cli::flags::{LogsFlags, PsFlags};
+
 pub async fn run_ps(
     hostname: String,
     session: openssh::Session,
-    all: bool,
+    flags: PsFlags,
 ) -> Result<String, openssh::Error> {
-    let mut command = vec!["docker", "ps"];
-    if all {
-        command.push("-a");
-    };
+    let mut command: Vec<String> = vec!["docker".into(), "ps".into()];
+
+    for flag in flags.flags() {
+        command.push(flag)
+    }
 
     let output = match session.command("sudo").args(command).output().await {
         Ok(output) => output,
@@ -42,15 +45,6 @@ pub async fn run_stop(
     Ok(rv)
 }
 
-pub struct LogsFlags {
-    pub details: bool,
-    pub follow: bool,
-    pub since: Option<String>,
-    pub tail: Option<String>,
-    pub timestamps: bool,
-    pub until: Option<String>,
-}
-
 pub async fn run_logs(
     hostname: String,
     session: openssh::Session,
@@ -59,25 +53,8 @@ pub async fn run_logs(
 ) -> Result<String, openssh::Error> {
     let mut command: Vec<String> = vec!["docker".into(), "logs".into()];
 
-    if flags.details {
-        command.push("--details".into());
-    }
-
-    if flags.timestamps {
-        command.push("--timestamps".into());
-    }
-
-    if let Some(s) = flags.since {
-        command.push("--since".into());
-        command.push(s);
-    }
-    if let Some(s) = flags.tail {
-        command.push("--tail".into());
-        command.push(s);
-    }
-    if let Some(s) = flags.until {
-        command.push("--until".into());
-        command.push(s);
+    for item in flags.flags() {
+        command.push(item)
     }
 
     if flags.follow {

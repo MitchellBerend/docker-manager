@@ -12,9 +12,37 @@ pub struct App {
 pub enum Command {
     /// Lists all containers on remote nodes
     Ps {
-        /// include inactive containers
+        /// Show all containers (default shows just running)
         #[arg(short, long)]
         all: bool,
+
+        /// Filter output based on conditions provided
+        #[arg(short, long, value_name = "filter")]
+        filter: Option<String>,
+
+        /// Pretty-print containers using a Go template
+        #[arg(long, value_name = "string")]
+        format: Option<String>,
+
+        /// Show n last created containers (includes all states) (default -1)
+        #[arg(short = 'n', long)]
+        last: bool,
+
+        /// Show the latest created container (includes all states)
+        #[arg(short, long)]
+        latests: bool,
+
+        /// Don't truncate output
+        #[arg(long)]
+        no_trunc: bool,
+
+        /// Only display container IDs
+        #[arg(short, long)]
+        quiet: bool,
+
+        /// Display total file sizes
+        #[arg(short, long)]
+        size: bool,
     },
 
     /// Stops a given container unless 2 or more containers are found on remote nodes

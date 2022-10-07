@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use crate::cli::flags::{LogsFlags, PsFlags};
 use crate::cli::Command;
 use crate::utility::command;
 
@@ -52,8 +53,18 @@ impl Node {
         };
 
         match command {
-            Command::Ps { all } => {
-                match command::run_ps(self.address.clone(), session, all).await {
+            Command::Ps {
+                all,
+                filter,
+                format,
+                last,
+                latests,
+                no_trunc,
+                quiet,
+                size,
+            } => {
+                let flags = PsFlags::new(all, filter, format, last, latests, no_trunc, quiet, size);
+                match command::run_ps(self.address.clone(), session, flags).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
@@ -73,14 +84,7 @@ impl Node {
                 timestamps,
                 until,
             } => {
-                let flags = command::LogsFlags {
-                    details,
-                    follow,
-                    since,
-                    tail,
-                    timestamps,
-                    until,
-                };
+                let flags = LogsFlags::new(details, follow, since, tail, timestamps, until);
 
                 match command::run_logs(self.address.clone(), session, container_id, flags).await {
                     //, follow).await {
