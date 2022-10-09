@@ -156,3 +156,116 @@ impl PsFlags {
         v
     }
 }
+
+#[derive(Debug)]
+pub struct ExecFlags {
+    pub detach: bool,
+    pub detach_keys: String,
+    pub env: Vec<String>,
+    pub env_file: Vec<String>,
+    pub interactive: bool,
+    pub privileged: bool,
+    //pub tty: bool,
+    pub user: String,
+    pub workdir: String,
+}
+
+impl ExecFlags {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        detach: bool,
+        detach_keys: Option<String>,
+        env: Option<Vec<String>>,
+        env_file: Option<Vec<String>>,
+        interactive: bool,
+        privileged: bool,
+        //tty: bool,
+        user: Option<String>,
+        workdir: Option<String>,
+    ) -> Self {
+        let detach_keys = match detach_keys {
+            Some(d) => d,
+            None => "".into(),
+        };
+
+        let env = match env {
+            Some(e) => e,
+            None => vec![],
+        };
+
+        let env_file = match env_file {
+            Some(e) => e,
+            None => vec![],
+        };
+
+        let user = match user {
+            Some(u) => u,
+            None => "".into(),
+        };
+
+        let workdir = match workdir {
+            Some(w) => w,
+            None => "".into(),
+        };
+
+        Self {
+            detach,
+            detach_keys,
+            env,
+            env_file,
+            interactive,
+            privileged,
+            //tty,
+            user,
+            workdir,
+        }
+    }
+
+    pub fn flags(&self) -> Vec<String> {
+        let mut v: Vec<String> = vec![];
+        if self.detach {
+            v.push("-d".into());
+        }
+
+        if self.interactive {
+            v.push("-i".into());
+        }
+
+        if self.privileged {
+            v.push("--privileged".into());
+        }
+
+        if !self.detach_keys.is_empty() {
+            v.push("--detach-keys".into());
+            v.push(self.detach_keys.clone());
+        }
+
+        if !self.env.is_empty() {
+            for var in &self.env {
+                v.push("-e".into());
+                v.push(var.clone());
+            }
+        }
+
+        if !self.env_file.is_empty() {
+            for file in &self.env_file {
+                v.push("--env-file".into());
+                v.push(file.clone());
+            }
+        }
+
+        if !self.user.is_empty() {
+            v.push("--user".into());
+            v.push(self.user.clone());
+        }
+
+        if !self.workdir.is_empty() {
+            v.push("--workdir".into());
+            v.push(self.workdir.clone());
+        }
+        // This one is not actually useful since this program is not a tty
+        // tty: bool,
+
+        v
+    }
+}

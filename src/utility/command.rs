@@ -1,4 +1,4 @@
-use crate::cli::flags::{LogsFlags, PsFlags};
+use crate::cli::flags::{ExecFlags, LogsFlags, PsFlags};
 
 pub async fn run_ps(
     hostname: String,
@@ -61,19 +61,66 @@ pub async fn run_logs(
         command.push("-f".into());
         command.push(container_id);
 
-        let mut output = match session.command("sudo").args(command).spawn().await {
-            Ok(output) => output,
-            Err(e) => return Err(e),
-        };
+        // This needs to be mutable so the stdout can be written to
+        #[allow(unused_mut)]
+        let mut output = session.command("sudo").args(command).spawn().await;
+
+        if let Err(e) = output {
+            return Err(e);
+        }
+
         loop {
-            if let Some(stdout) = output.stdout().take() {
-                println!("{:?}", stdout)
-            };
+            std::thread::sleep(std::time::Duration::new(1, 0));
         }
     } else {
         command.push(container_id);
 
         let output = match session.command("sudo").args(command).output().await {
+            Ok(output) => output,
+            Err(e) => return Err(e),
+        };
+
+        let mut rv: String = format!("{}\n", hostname);
+
+        println!("o;{}", std::str::from_utf8(&output.stdout).unwrap_or(""));
+        println!("e;{}", std::str::from_utf8(&output.stderr).unwrap_or(""));
+        match output.status.code().unwrap() {
+            0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
+            _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
+        };
+        Ok(rv)
+    }
+}
+
+pub async fn run_exec(
+    hostname: String,
+    session: openssh::Session,
+    container_id: String,
+    command: String,
+    flags: ExecFlags,
+) -> Result<String, openssh::Error> {
+    let mut _command: Vec<String> = vec!["docker".into(), "exec".into()];
+
+    for flag in &flags.flags() {
+        _command.push(flag.clone());
+    }
+    _command.push(container_id);
+    _command.push(command);
+
+    if flags.interactive {
+        // This needs to be mutable so the stdout can be written to
+        #[allow(unused_mut)]
+        let mut output = session.command("sudo").args(_command).spawn().await;
+
+        if let Err(e) = output {
+            return Err(e);
+        }
+
+        loop {
+            std::thread::sleep(std::time::Duration::new(1, 0));
+        }
+    } else {
+        let output = match session.command("sudo").args(_command).output().await {
             Ok(output) => output,
             Err(e) => return Err(e),
         };
