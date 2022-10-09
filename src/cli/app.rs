@@ -10,6 +10,12 @@ pub struct App {
 
 #[derive(Clone, Subcommand)]
 pub enum Command {
+    /// Generate Bash completion
+    /// To get bash shell completion to work you can add
+    /// `eval "$(docker-manager completion)"` to your
+    /// ~/.bashrc.
+    Completion,
+
     /// Lists all containers on remote nodes
     Ps {
         /// Show all containers (default shows just running)

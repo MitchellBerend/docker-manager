@@ -53,6 +53,10 @@ impl Node {
         };
 
         match command {
+            Command::Completion => {
+                // This command should not lead to any activity
+                unreachable!()
+            }
             Command::Ps {
                 all,
                 filter,
