@@ -1,4 +1,3 @@
-//use clap::{Parser, Subcommand, ValueHint, Command};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -9,13 +8,12 @@ pub struct App {
     pub command: Command,
 }
 
-//pub fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
-//    generate(gen, cmd, cmd.get_name().to_string(), &mut io::stdout());
-//}
-
 #[derive(Clone, Subcommand)]
 pub enum Command {
     /// Generate Bash completion
+    /// To get bash shell completion to work you can add
+    /// `eval "$(docker-manager completion)"` to your
+    /// ~/.bashrc.
     Completion,
 
     /// Lists all containers on remote nodes

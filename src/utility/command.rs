@@ -1,16 +1,4 @@
-use clap::Command;
-use clap_complete::generate;
-
 use crate::cli::flags::{LogsFlags, PsFlags};
-
-pub fn run_completion(cmd: &mut Command) {
-    generate(
-        clap_complete::Shell::Bash,
-        cmd,
-        cmd.get_name().to_string(),
-        &mut std::io::stdout(),
-    );
-}
 
 pub async fn run_ps(
     hostname: String,
