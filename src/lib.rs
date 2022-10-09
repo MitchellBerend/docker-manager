@@ -4,15 +4,20 @@ mod cli;
 mod client;
 mod utility;
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 
 pub async fn run() {
-    let _cli = cli::App::parse();
+    let mut _cli = cli::App::parse();
 
-    for word in utility::run_command(_cli.command).await {
-        match word {
-            Ok(s) => println!("{}", s),
-            Err(e) => println!("{}", e),
+    match _cli.command {
+        cli::Command::Completion => utility::command::run_completion(&mut cli::App::command()),
+        _ => {
+            for word in utility::run_command(_cli.command).await {
+                match word {
+                    Ok(s) => println!("{}", s),
+                    Err(e) => println!("{}", e),
+                }
+            }
         }
     }
 }

@@ -10,4 +10,5 @@ clap = { version = "4.0", features = ["derive"] }
 openssh = { version = "0.9", features = [ "native-mux" ]}
 tokio = { version = "1.21", features = ["full"] }
 
+clap_complete = "4.0"
 futures = "0.3"

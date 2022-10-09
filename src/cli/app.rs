@@ -1,3 +1,4 @@
+//use clap::{Parser, Subcommand, ValueHint, Command};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -8,8 +9,15 @@ pub struct App {
     pub command: Command,
 }
 
+//pub fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
+//    generate(gen, cmd, cmd.get_name().to_string(), &mut io::stdout());
+//}
+
 #[derive(Clone, Subcommand)]
 pub enum Command {
+    /// Generate Bash completion
+    Completion,
+
     /// Lists all containers on remote nodes
     Ps {
         /// Show all containers (default shows just running)
