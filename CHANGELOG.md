@@ -5,3 +5,6 @@ Implementremaining logs flags
 
 [#6](https://github.com/MitchellBerend/docker-manager/issues/6)
 Implement remaining ps flags
+
+[[#15](https://github.com/MitchellBerend/docker-manager/pull/15)] Added bash
+compeltion command
