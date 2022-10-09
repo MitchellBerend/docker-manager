@@ -18,6 +18,9 @@ pub enum Command {
         /// Command
         command: String,
 
+        /// Command args
+        args: Option<Vec<String>>,
+
         /// Detached mode: run command in the background
         #[arg(short, long)]
         detach: bool,
