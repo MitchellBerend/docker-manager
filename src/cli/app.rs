@@ -22,10 +22,7 @@ pub enum Command {
         container_id: String,
 
         /// Command
-        command: String,
-
-        /// Command args
-        args: Option<Vec<String>>,
+        command: Vec<String>,
 
         /// Detached mode: run command in the background
         #[arg(short, long)]

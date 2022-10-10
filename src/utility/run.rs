@@ -21,7 +21,6 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
         Command::Exec {
             container_id,
             command,
-            args,
             detach,
             detach_keys,
             env,
@@ -46,7 +45,6 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                         .run_command(Command::Exec {
                             container_id,
                             command,
-                            args,
                             detach,
                             detach_keys,
                             env,

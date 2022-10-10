@@ -60,7 +60,6 @@ impl Node {
             Command::Exec {
                 container_id,
                 command,
-                args,
                 detach,
                 detach_keys,
                 env,
@@ -80,15 +79,8 @@ impl Node {
                     user,
                     workdir,
                 );
-                match command::run_exec(
-                    self.address.clone(),
-                    session,
-                    container_id,
-                    command,
-                    args,
-                    flags,
-                )
-                .await
+                match command::run_exec(self.address.clone(), session, container_id, command, flags)
+                    .await
                 {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),

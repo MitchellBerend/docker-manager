@@ -92,8 +92,8 @@ pub async fn run_exec(
     hostname: String,
     session: openssh::Session,
     container_id: String,
-    command: String,
-    args: Option<Vec<String>>,
+    command: Vec<String>,
+    //args: Option<Vec<String>>,
     flags: ExecFlags,
 ) -> Result<String, openssh::Error> {
     let mut _command: Vec<String> = vec!["docker".into(), "exec".into()];
@@ -102,12 +102,9 @@ pub async fn run_exec(
         _command.push(flag.clone());
     }
     _command.push(container_id);
-    _command.push(command);
 
-    if let Some(v_arg) = args {
-        for arg in v_arg {
-            _command.push(arg);
-        }
+    for arg in command {
+        _command.push(arg);
     }
 
     if flags.interactive {
