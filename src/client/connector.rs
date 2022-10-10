@@ -53,6 +53,10 @@ impl Node {
         };
 
         match command {
+            Command::Completion => {
+                // This command should not lead to any activity
+                unreachable!()
+            }
             Command::Exec {
                 container_id,
                 command,
@@ -88,7 +92,6 @@ impl Node {
                 {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
-                }
             }
             Command::Ps {
                 all,
