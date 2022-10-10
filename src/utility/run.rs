@@ -70,6 +70,7 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
             }
+        }
         Command::Ps {
             all,
             filter,

@@ -92,6 +92,7 @@ impl Node {
                 {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
             }
             Command::Ps {
                 all,
