@@ -63,11 +63,7 @@ pub async fn run_logs(
 
         // This needs to be mutable so the stdout can be written to
         #[allow(unused_mut)]
-        let mut output = session.command("sudo").args(command).spawn().await;
-
-        if let Err(e) = output {
-            return Err(e);
-        }
+        let mut _output = session.command("sudo").args(command).spawn().await?;
 
         loop {
             std::thread::sleep(std::time::Duration::new(1, 0));
@@ -117,11 +113,7 @@ pub async fn run_exec(
     if flags.interactive {
         // This needs to be mutable so the stdout can be written to
         #[allow(unused_mut)]
-        let mut output = session.command("sudo").args(_command).spawn().await;
-
-        if let Err(e) = output {
-            return Err(e);
-        }
+        let mut _output = session.command("sudo").args(_command).spawn().await?;
 
         loop {
             std::thread::sleep(std::time::Duration::new(1, 0));
