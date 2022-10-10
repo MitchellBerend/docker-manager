@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::cli::flags::{LogsFlags, PsFlags};
+use crate::cli::flags::{ExecFlags, LogsFlags, PsFlags};
 use crate::cli::Command;
 use crate::utility::command;
 
@@ -56,6 +56,35 @@ impl Node {
             Command::Completion => {
                 // This command should not lead to any activity
                 unreachable!()
+            }
+            Command::Exec {
+                container_id,
+                command,
+                detach,
+                detach_keys,
+                env,
+                env_file,
+                interactive,
+                privileged,
+                user,
+                workdir,
+            } => {
+                let flags = ExecFlags::new(
+                    detach,
+                    detach_keys,
+                    env,
+                    env_file,
+                    interactive,
+                    privileged,
+                    user,
+                    workdir,
+                );
+                match command::run_exec(self.address.clone(), session, container_id, command, flags)
+                    .await
+                {
+                    Ok(result) => Ok(result),
+                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
             }
             Command::Ps {
                 all,

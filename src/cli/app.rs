@@ -16,6 +16,51 @@ pub enum Command {
     /// ~/.bashrc.
     Completion,
 
+    /// Execute a command on a given container unless 2 or more containers are found on remote nodes
+    Exec {
+        /// Container name or id
+        container_id: String,
+
+        /// Command
+        command: Vec<String>,
+
+        /// Detached mode: run command in the background
+        #[arg(short, long)]
+        detach: bool,
+
+        /// Override the key sequence for detaching a container
+        #[arg(long, value_name = "string")]
+        detach_keys: Option<String>,
+
+        /// Set environment variables
+        #[arg(short, long, value_name = "list")]
+        env: Option<Vec<String>>,
+
+        /// Read in a file of environment variables
+        #[arg(long, value_name = "list")]
+        env_file: Option<Vec<String>>,
+
+        /// Keep STDIN open even if not attached
+        #[arg(short, long)]
+        interactive: bool,
+
+        /// Give extended privileges to the command
+        #[arg(long)]
+        privileged: bool,
+
+        // This one is not useful for us
+        ///// Allocate a pseudo-TTY
+        //#[arg(short, long)]
+        //tty: bool,
+        /// Username or UID (format: <name|uid>[:<group|gid>])
+        #[arg(short, long, value_name = "string")]
+        user: Option<String>,
+
+        /// Working directory inside the container
+        #[arg(short, long, value_name = "string")]
+        workdir: Option<String>,
+    },
+
     /// Lists all containers on remote nodes
     Ps {
         /// Show all containers (default shows just running)
