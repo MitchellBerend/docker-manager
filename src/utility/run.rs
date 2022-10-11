@@ -69,6 +69,82 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                 }
             }
         }
+        Command::Images {
+            all,
+            digest,
+            filter,
+            format,
+            no_trunc,
+            quiet,
+        } => {
+            let bodies = stream::iter(client.nodes_info())
+                .map(|(_, node)| async {
+                    let _filter: Option<String> =
+                        filter.as_ref().map(|filter| String::from(&filter.clone()));
+                    let _format: Option<String> =
+                        format.as_ref().map(|format| String::from(&format.clone()));
+                    match node
+                        .run_command(Command::Images {
+                            all,
+                            digest,
+                            filter: _filter,
+                            format: _format,
+                            no_trunc,
+                            quiet,
+                        })
+                        .await
+                    {
+                        Ok(result) => Ok(result),
+                        Err(e) => Err(CommandError::NodeError(e)),
+                    }
+                })
+                .buffer_unordered(constants::CONCURRENT_REQUESTS);
+            bodies.collect::<Vec<Result<String, CommandError>>>().await
+        }
+        Command::Logs {
+            container_id,
+            details,
+            follow,
+            since,
+            tail,
+            timestamps,
+            until,
+        } => {
+            let node_containers: Vec<(String, String)> =
+                find_container(client, &container_id).await;
+            match node_containers.len() {
+                0 => {
+                    vec![Err(CommandError::NoNodesFound(container_id))]
+                }
+                1 => {
+                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
+                    let node_tuple = node_containers.get(0).unwrap().to_owned();
+                    let node = Node::new(node_tuple.1);
+                    match node
+                        .run_command(Command::Logs {
+                            container_id,
+                            details,
+                            follow,
+                            since,
+                            tail,
+                            timestamps,
+                            until,
+                        })
+                        .await
+                    {
+                        Ok(s) => vec![Ok(s)],
+                        Err(e) => vec![Err(CommandError::NodeError(e))],
+                    }
+                }
+                _ => {
+                    let nodes = node_containers
+                        .iter()
+                        .map(|(_, result)| result.clone())
+                        .collect::<Vec<String>>();
+                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                }
+            }
+        }
         Command::Ps {
             all,
             filter,
@@ -118,50 +194,6 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
                     match node.run_command(Command::Stop { container_id }).await {
-                        Ok(s) => vec![Ok(s)],
-                        Err(e) => vec![Err(CommandError::NodeError(e))],
-                    }
-                }
-                _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|(_, result)| result.clone())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
-                }
-            }
-        }
-        Command::Logs {
-            container_id,
-            details,
-            follow,
-            since,
-            tail,
-            timestamps,
-            until,
-        } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id).await;
-            match node_containers.len() {
-                0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
-                }
-                1 => {
-                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
-                    let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.1);
-                    match node
-                        .run_command(Command::Logs {
-                            container_id,
-                            details,
-                            follow,
-                            since,
-                            tail,
-                            timestamps,
-                            until,
-                        })
-                        .await
-                    {
                         Ok(s) => vec![Ok(s)],
                         Err(e) => vec![Err(CommandError::NodeError(e))],
                     }

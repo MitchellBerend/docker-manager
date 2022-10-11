@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::cli::flags::{ExecFlags, LogsFlags, PsFlags};
+use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags};
 use crate::cli::Command;
 use crate::utility::command;
 
@@ -86,6 +86,38 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
+            Command::Images {
+                all,
+                digest,
+                filter,
+                format,
+                no_trunc,
+                quiet,
+            } => {
+                let flags = ImagesFlags::new(all, digest, filter, format, no_trunc, quiet);
+
+                match command::run_images(self.address.clone(), session, flags).await {
+                    Ok(result) => Ok(result),
+                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
+            }
+            Command::Logs {
+                container_id,
+                details,
+                follow,
+                since,
+                tail,
+                timestamps,
+                until,
+            } => {
+                let flags = LogsFlags::new(details, follow, since, tail, timestamps, until);
+
+                match command::run_logs(self.address.clone(), session, container_id, flags).await {
+                    //, follow).await {
+                    Ok(result) => Ok(result),
+                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
+            }
             Command::Ps {
                 all,
                 filter,
@@ -104,23 +136,6 @@ impl Node {
             }
             Command::Stop { container_id } => {
                 match command::run_stop(self.address.clone(), session, container_id).await {
-                    Ok(result) => Ok(result),
-                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
-                }
-            }
-            Command::Logs {
-                container_id,
-                details,
-                follow,
-                since,
-                tail,
-                timestamps,
-                until,
-            } => {
-                let flags = LogsFlags::new(details, follow, since, tail, timestamps, until);
-
-                match command::run_logs(self.address.clone(), session, container_id, flags).await {
-                    //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
