@@ -1,11 +1,53 @@
-use crate::cli::flags::{ExecFlags, LogsFlags, PsFlags};
+use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags};
 
-pub async fn run_ps(
+pub async fn run_exec(
     hostname: String,
     session: openssh::Session,
-    flags: PsFlags,
+    container_id: String,
+    command: Vec<String>,
+    //args: Option<Vec<String>>,
+    flags: ExecFlags,
 ) -> Result<String, openssh::Error> {
-    let mut command: Vec<String> = vec!["docker".into(), "ps".into()];
+    let mut _command: Vec<String> = vec!["docker".into(), "exec".into()];
+
+    for flag in &flags.flags() {
+        _command.push(flag.clone());
+    }
+    _command.push(container_id);
+
+    for arg in command {
+        _command.push(arg);
+    }
+
+    if flags.interactive {
+        // This needs to be mutable so the stdout can be written to
+        #[allow(unused_mut)]
+        let mut _output = session.command("sudo").args(_command).spawn().await?;
+
+        loop {
+            std::thread::sleep(std::time::Duration::new(1, 0));
+        }
+    } else {
+        let output = match session.command("sudo").args(_command).output().await {
+            Ok(output) => output,
+            Err(e) => return Err(e),
+        };
+
+        let mut rv: String = format!("{}\n", hostname);
+        match output.status.code().unwrap() {
+            0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
+            _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
+        };
+        Ok(rv)
+    }
+}
+
+pub async fn run_images(
+    hostname: String,
+    session: openssh::Session,
+    flags: ImagesFlags,
+) -> Result<String, openssh::Error> {
+    let mut command: Vec<String> = vec!["docker".into(), "images".into()];
 
     for flag in flags.flags() {
         command.push(flag)
@@ -15,27 +57,6 @@ pub async fn run_ps(
         Ok(output) => output,
         Err(e) => return Err(e),
     };
-    let mut rv: String = format!("{}\n", hostname);
-    match output.status.code().unwrap() {
-        0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
-        _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
-    };
-
-    Ok(rv)
-}
-
-pub async fn run_stop(
-    hostname: String,
-    session: openssh::Session,
-    container_id: String,
-) -> Result<String, openssh::Error> {
-    let command = vec!["docker", "stop", &container_id];
-
-    let output = match session.command("sudo").args(command).output().await {
-        Ok(output) => output,
-        Err(e) => return Err(e),
-    };
-
     let mut rv: String = format!("{}\n", hostname);
     match output.status.code().unwrap() {
         0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
@@ -87,45 +108,47 @@ pub async fn run_logs(
         Ok(rv)
     }
 }
+pub async fn run_ps(
+    hostname: String,
+    session: openssh::Session,
+    flags: PsFlags,
+) -> Result<String, openssh::Error> {
+    let mut command: Vec<String> = vec!["docker".into(), "ps".into()];
 
-pub async fn run_exec(
+    for flag in flags.flags() {
+        command.push(flag)
+    }
+
+    let output = match session.command("sudo").args(command).output().await {
+        Ok(output) => output,
+        Err(e) => return Err(e),
+    };
+    let mut rv: String = format!("{}\n", hostname);
+    match output.status.code().unwrap() {
+        0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
+        _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
+    };
+
+    Ok(rv)
+}
+
+pub async fn run_stop(
     hostname: String,
     session: openssh::Session,
     container_id: String,
-    command: Vec<String>,
-    //args: Option<Vec<String>>,
-    flags: ExecFlags,
 ) -> Result<String, openssh::Error> {
-    let mut _command: Vec<String> = vec!["docker".into(), "exec".into()];
+    let command = vec!["docker", "stop", &container_id];
 
-    for flag in &flags.flags() {
-        _command.push(flag.clone());
-    }
-    _command.push(container_id);
+    let output = match session.command("sudo").args(command).output().await {
+        Ok(output) => output,
+        Err(e) => return Err(e),
+    };
 
-    for arg in command {
-        _command.push(arg);
-    }
+    let mut rv: String = format!("{}\n", hostname);
+    match output.status.code().unwrap() {
+        0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
+        _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
+    };
 
-    if flags.interactive {
-        // This needs to be mutable so the stdout can be written to
-        #[allow(unused_mut)]
-        let mut _output = session.command("sudo").args(_command).spawn().await?;
-
-        loop {
-            std::thread::sleep(std::time::Duration::new(1, 0));
-        }
-    } else {
-        let output = match session.command("sudo").args(_command).output().await {
-            Ok(output) => output,
-            Err(e) => return Err(e),
-        };
-
-        let mut rv: String = format!("{}\n", hostname);
-        match output.status.code().unwrap() {
-            0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
-            _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
-        };
-        Ok(rv)
-    }
+    Ok(rv)
 }
