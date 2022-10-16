@@ -3,6 +3,10 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(author, version, about)]
 pub struct App {
+    /// Runs the command as sudo on the remote nodes
+    #[arg(short, long)]
+    pub sudo: bool,
+
     /// This command will be ran on the remote nodes
     #[command(subcommand)]
     pub command: Command,

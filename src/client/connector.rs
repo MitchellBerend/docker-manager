@@ -42,7 +42,7 @@ impl Node {
         Self { address }
     }
 
-    pub async fn run_command(&self, command: Command) -> Result<String, NodeError> {
+    pub async fn run_command(&self, command: Command, sudo: bool) -> Result<String, NodeError> {
         let session = match openssh::SessionBuilder::default()
             .connect_timeout(std::time::Duration::new(1, 0))
             .connect_mux(&self.address)
@@ -79,8 +79,15 @@ impl Node {
                     user,
                     workdir,
                 );
-                match command::run_exec(self.address.clone(), session, container_id, command, flags)
-                    .await
+                match command::run_exec(
+                    self.address.clone(),
+                    session,
+                    container_id,
+                    sudo,
+                    command,
+                    flags,
+                )
+                .await
                 {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
@@ -96,7 +103,7 @@ impl Node {
             } => {
                 let flags = ImagesFlags::new(all, digest, filter, format, no_trunc, quiet);
 
-                match command::run_images(self.address.clone(), session, flags).await {
+                match command::run_images(self.address.clone(), session, sudo, flags).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
@@ -112,7 +119,9 @@ impl Node {
             } => {
                 let flags = LogsFlags::new(details, follow, since, tail, timestamps, until);
 
-                match command::run_logs(self.address.clone(), session, container_id, flags).await {
+                match command::run_logs(self.address.clone(), session, container_id, sudo, flags)
+                    .await
+                {
                     //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
@@ -129,13 +138,13 @@ impl Node {
                 size,
             } => {
                 let flags = PsFlags::new(all, filter, format, last, latests, no_trunc, quiet, size);
-                match command::run_ps(self.address.clone(), session, flags).await {
+                match command::run_ps(self.address.clone(), session, sudo, flags).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
             Command::Stop { container_id } => {
-                match command::run_stop(self.address.clone(), session, container_id).await {
+                match command::run_stop(self.address.clone(), session, sudo, container_id).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }

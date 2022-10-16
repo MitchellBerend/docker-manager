@@ -4,11 +4,12 @@ pub async fn run_exec(
     hostname: String,
     session: openssh::Session,
     container_id: String,
+    sudo: bool,
     command: Vec<String>,
     //args: Option<Vec<String>>,
     flags: ExecFlags,
 ) -> Result<String, openssh::Error> {
-    let mut _command: Vec<String> = vec!["docker".into(), "exec".into()];
+    let mut _command: Vec<String> = vec!["exec".into()];
 
     for flag in &flags.flags() {
         _command.push(flag.clone());
@@ -22,13 +23,35 @@ pub async fn run_exec(
     if flags.interactive {
         // This needs to be mutable so the stdout can be written to
         #[allow(unused_mut)]
-        let mut _output = session.command("sudo").args(_command).spawn().await?;
+        let mut _output = match sudo {
+            true => {
+                session
+                    .command("sudo")
+                    .arg("docker")
+                    .args(_command)
+                    .spawn()
+                    .await?
+            }
+            false => session.command("docker").args(_command).spawn().await?,
+        };
 
         loop {
             std::thread::sleep(std::time::Duration::new(1, 0));
         }
     } else {
-        let output = match session.command("sudo").args(_command).output().await {
+        let _output = match sudo {
+            true => {
+                session
+                    .command("sudo")
+                    .arg("docker")
+                    .args(_command)
+                    .output()
+                    .await
+            }
+            false => session.command("docker").args(_command).output().await,
+        };
+
+        let output = match _output {
             Ok(output) => output,
             Err(e) => return Err(e),
         };
@@ -45,18 +68,32 @@ pub async fn run_exec(
 pub async fn run_images(
     hostname: String,
     session: openssh::Session,
+    sudo: bool,
     flags: ImagesFlags,
 ) -> Result<String, openssh::Error> {
-    let mut command: Vec<String> = vec!["docker".into(), "images".into()];
+    let mut command: Vec<String> = vec!["images".into()];
 
     for flag in flags.flags() {
         command.push(flag)
     }
 
-    let output = match session.command("sudo").args(command).output().await {
+    let _output = match sudo {
+        true => {
+            session
+                .command("sudo")
+                .arg("docker")
+                .args(command)
+                .output()
+                .await
+        }
+        false => session.command("docker").args(command).output().await,
+    };
+
+    let output = match _output {
         Ok(output) => output,
         Err(e) => return Err(e),
     };
+
     let mut rv: String = format!("{}\n", hostname);
     match output.status.code().unwrap() {
         0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
@@ -70,9 +107,10 @@ pub async fn run_logs(
     hostname: String,
     session: openssh::Session,
     container_id: String,
+    sudo: bool,
     flags: LogsFlags,
 ) -> Result<String, openssh::Error> {
-    let mut command: Vec<String> = vec!["docker".into(), "logs".into()];
+    let mut command: Vec<String> = vec!["logs".into()];
 
     for item in flags.flags() {
         command.push(item)
@@ -84,15 +122,36 @@ pub async fn run_logs(
 
         // This needs to be mutable so the stdout can be written to
         #[allow(unused_mut)]
-        let mut _output = session.command("sudo").args(command).spawn().await?;
+        let mut _output = match sudo {
+            true => {
+                session
+                    .command("sudo")
+                    .arg("docker")
+                    .args(command)
+                    .spawn()
+                    .await?
+            }
+            false => session.command("docker").args(command).spawn().await?,
+        };
 
         loop {
             std::thread::sleep(std::time::Duration::new(1, 0));
         }
     } else {
         command.push(container_id);
+        let _output = match sudo {
+            true => {
+                session
+                    .command("sudo")
+                    .arg("docker")
+                    .args(command)
+                    .output()
+                    .await
+            }
+            false => session.command("docker").args(command).output().await,
+        };
 
-        let output = match session.command("sudo").args(command).output().await {
+        let output = match _output {
             Ok(output) => output,
             Err(e) => return Err(e),
         };
@@ -111,18 +170,32 @@ pub async fn run_logs(
 pub async fn run_ps(
     hostname: String,
     session: openssh::Session,
+    sudo: bool,
     flags: PsFlags,
 ) -> Result<String, openssh::Error> {
-    let mut command: Vec<String> = vec!["docker".into(), "ps".into()];
+    let mut command: Vec<String> = vec!["ps".into()];
 
     for flag in flags.flags() {
         command.push(flag)
     }
 
-    let output = match session.command("sudo").args(command).output().await {
+    let _output = match sudo {
+        true => {
+            session
+                .command("sudo")
+                .arg("docker")
+                .args(command)
+                .output()
+                .await
+        }
+        false => session.command("docker").args(command).output().await,
+    };
+
+    let output = match _output {
         Ok(output) => output,
         Err(e) => return Err(e),
     };
+
     let mut rv: String = format!("{}\n", hostname);
     match output.status.code().unwrap() {
         0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
@@ -135,11 +208,24 @@ pub async fn run_ps(
 pub async fn run_stop(
     hostname: String,
     session: openssh::Session,
+    sudo: bool,
     container_id: String,
 ) -> Result<String, openssh::Error> {
-    let command = vec!["docker", "stop", &container_id];
+    let command = vec!["stop", &container_id];
 
-    let output = match session.command("sudo").args(command).output().await {
+    let _output = match sudo {
+        true => {
+            session
+                .command("sudo")
+                .arg("docker")
+                .args(command)
+                .output()
+                .await
+        }
+        false => session.command("docker").args(command).output().await,
+    };
+
+    let output = match _output {
         Ok(output) => output,
         Err(e) => return Err(e),
     };

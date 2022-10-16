@@ -16,7 +16,7 @@ pub async fn run() {
         }
 
         _ => {
-            for word in utility::run_command(_cli.command).await {
+            for word in utility::run_command(_cli.command, _cli.sudo).await {
                 match word {
                     Ok(s) => println!("{}", s),
                     Err(e) => println!("{}", e),
