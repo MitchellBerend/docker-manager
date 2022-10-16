@@ -1,5 +1,10 @@
 ## Added
 
+[[#21](https://github.com/MitchellBerend/docker-manager/issues/21)] Remove implicit sudo call
+
+
+## Added
+
 v0.0.4
 ---
 

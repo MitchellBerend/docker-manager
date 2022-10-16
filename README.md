@@ -21,3 +21,9 @@ to support all docker commands on remote nodes.
 | STOP     |                          |
 | LOGS     |                          |
 | EXEC     | --tty is not implemented |
+
+
+# Flags
+
+`-s`/`--sudo` Enables sudo on the remote node. This might be needed depending on
+how the remote node and it's user is set up.
