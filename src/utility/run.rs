@@ -14,7 +14,7 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
     let client = Client::from_config(config_path);
 
     match command {
-        Command::Completion => {
+        Command::Completion { shell: _ } => {
             // This command should not lead to any activity
             unreachable!()
         }

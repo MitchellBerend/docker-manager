@@ -10,18 +10,16 @@ pub struct App {
 
 #[derive(Clone, Subcommand)]
 pub enum Command {
-    /// Generate Bash completion
-    /// To get bash shell completion to work you can add
-    /// `eval "$(docker-manager completion)"` to your
-    /// ~/.bashrc.
-    Completion,
+    /// Generate Bash completion to get bash shell completion to work you can add `eval
+    /// "$(docker-manager completion)"` to your ~/.bashrc.
+    Completion { shell: clap_complete::Shell },
 
     /// Execute a command on a given container unless 2 or more containers are found on remote nodes
     Exec {
         /// Container name or id
         container_id: String,
 
-        /// Command
+        /// Command that should be ran on the given container
         command: Vec<String>,
 
         /// Detached mode: run command in the background

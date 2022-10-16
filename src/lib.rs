@@ -11,18 +11,10 @@ pub async fn run() {
     let mut _cli = cli::App::parse();
 
     match _cli.command {
-        cli::Command::Completion => {
-            let mut cmd = cli::App::command();
-            let cmd_name: String = cmd.get_name().into();
-            generate(
-                clap_complete::Shell::Bash,
-                &mut cmd,
-                cmd_name,
-                &mut std::io::stdout(),
-            );
+        cli::Command::Completion { shell } => {
+            generate_completion(shell);
         }
 
-        //utility::command::run_completion(&mut cli::App::command()),
         _ => {
             for word in utility::run_command(_cli.command).await {
                 match word {
@@ -32,4 +24,10 @@ pub async fn run() {
             }
         }
     }
+}
+
+fn generate_completion(shell: clap_complete::Shell) {
+    let mut cmd = cli::App::command();
+    let cmd_name: String = cmd.get_name().into();
+    generate(shell, &mut cmd, cmd_name, &mut std::io::stdout());
 }
