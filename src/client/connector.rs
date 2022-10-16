@@ -53,7 +53,7 @@ impl Node {
         };
 
         match command {
-            Command::Completion => {
+            Command::Completion { shell: _ } => {
                 // This command should not lead to any activity
                 unreachable!()
             }
