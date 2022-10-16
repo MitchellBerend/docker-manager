@@ -1,7 +1,8 @@
 ## Added
 
-[[#11](https://github.com/MitchellBerend/docker-manager/issues/11)]Implement images command and all its flags
-
+[[#11](https://github.com/MitchellBerend/docker-manager/issues/11)] Implement images command and all its flags
+[[#17](https://github.com/MitchellBerend/docker-manager/pull/17)] Added shell completion generation
+[[#18](https://github.com/MitchellBerend/docker-manager/pull/18)] Added readme and license
 
 
 v0.0.3
