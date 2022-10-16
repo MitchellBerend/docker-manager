@@ -7,20 +7,27 @@ use futures::{stream, StreamExt};
 
 /// This function takes a `Client` and returns a list of matched node names in the form of a tuple
 /// with (hostname, container_id).
-pub async fn find_container(client: Client, container_id: &str) -> Vec<(String, String)> {
+pub async fn find_container(
+    client: Client,
+    container_id: &str,
+    sudo: bool,
+) -> Vec<(String, String)> {
     let bodies = stream::iter(client.nodes_info())
         .map(|(hostname, node)| async move {
             match node
-                .run_command(Command::Ps {
-                    all: false,
-                    filter: None,
-                    format: None,
-                    last: false,
-                    latests: false,
-                    no_trunc: false,
-                    quiet: false,
-                    size: false,
-                })
+                .run_command(
+                    Command::Ps {
+                        all: false,
+                        filter: None,
+                        format: None,
+                        last: false,
+                        latests: false,
+                        no_trunc: false,
+                        quiet: false,
+                        size: false,
+                    },
+                    sudo,
+                )
                 .await
             {
                 Ok(result) => (hostname.clone(), Ok(result)),

@@ -6,7 +6,7 @@ use crate::cli::Command;
 use crate::client::{Client, Node, NodeError};
 use crate::utility::find_container;
 
-pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> {
+pub async fn run_command(command: Command, sudo: bool) -> Vec<Result<String, CommandError>> {
     let config_path = format!(
         "{}/.ssh/config",
         std::env::var("HOME").unwrap_or_else(|_| "/home/root".into())
@@ -31,7 +31,7 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
             workdir,
         } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id).await;
+                find_container(client, &container_id, sudo).await;
 
             match node_containers.len() {
                 0 => {
@@ -42,18 +42,21 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
                     match node
-                        .run_command(Command::Exec {
-                            container_id,
-                            command,
-                            detach,
-                            detach_keys,
-                            env,
-                            env_file,
-                            interactive,
-                            privileged,
-                            user,
-                            workdir,
-                        })
+                        .run_command(
+                            Command::Exec {
+                                container_id,
+                                command,
+                                detach,
+                                detach_keys,
+                                env,
+                                env_file,
+                                interactive,
+                                privileged,
+                                user,
+                                workdir,
+                            },
+                            sudo,
+                        )
                         .await
                     {
                         Ok(s) => vec![Ok(s)],
@@ -84,14 +87,17 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     let _format: Option<String> =
                         format.as_ref().map(|format| String::from(&format.clone()));
                     match node
-                        .run_command(Command::Images {
-                            all,
-                            digest,
-                            filter: _filter,
-                            format: _format,
-                            no_trunc,
-                            quiet,
-                        })
+                        .run_command(
+                            Command::Images {
+                                all,
+                                digest,
+                                filter: _filter,
+                                format: _format,
+                                no_trunc,
+                                quiet,
+                            },
+                            sudo,
+                        )
                         .await
                     {
                         Ok(result) => Ok(result),
@@ -111,7 +117,7 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
             until,
         } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id).await;
+                find_container(client, &container_id, sudo).await;
             match node_containers.len() {
                 0 => {
                     vec![Err(CommandError::NoNodesFound(container_id))]
@@ -121,15 +127,18 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
                     match node
-                        .run_command(Command::Logs {
-                            container_id,
-                            details,
-                            follow,
-                            since,
-                            tail,
-                            timestamps,
-                            until,
-                        })
+                        .run_command(
+                            Command::Logs {
+                                container_id,
+                                details,
+                                follow,
+                                since,
+                                tail,
+                                timestamps,
+                                until,
+                            },
+                            sudo,
+                        )
                         .await
                     {
                         Ok(s) => vec![Ok(s)],
@@ -162,16 +171,19 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     let _format: Option<String> =
                         format.as_ref().map(|format| String::from(&format.clone()));
                     match node
-                        .run_command(Command::Ps {
-                            all,
-                            filter: _filter,
-                            format: _format,
-                            last,
-                            latests,
-                            no_trunc,
-                            quiet,
-                            size,
-                        })
+                        .run_command(
+                            Command::Ps {
+                                all,
+                                filter: _filter,
+                                format: _format,
+                                last,
+                                latests,
+                                no_trunc,
+                                quiet,
+                                size,
+                            },
+                            sudo,
+                        )
                         .await
                     {
                         Ok(result) => Ok(result),
@@ -183,7 +195,7 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
         }
         Command::Stop { container_id } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id).await;
+                find_container(client, &container_id, sudo).await;
 
             match node_containers.len() {
                 0 => {
@@ -193,7 +205,7 @@ pub async fn run_command(command: Command) -> Vec<Result<String, CommandError>> 
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
-                    match node.run_command(Command::Stop { container_id }).await {
+                    match node.run_command(Command::Stop { container_id }, sudo).await {
                         Ok(s) => vec![Ok(s)],
                         Err(e) => vec![Err(CommandError::NodeError(e))],
                     }
