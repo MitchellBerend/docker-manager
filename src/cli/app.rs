@@ -59,6 +59,63 @@ pub enum Command {
         workdir: Option<String>,
     },
 
+    /// List all images on remote nodes
+    Images {
+        /// Show all images (default hides intermediate images)
+        #[arg(short, long)]
+        all: bool,
+
+        /// Show digests
+        #[arg(long)]
+        digest: bool,
+
+        /// Filter output based on conditions provided
+        #[arg(short, long, value_name = "filter")]
+        filter: Option<String>,
+
+        /// Pretty-print images using a Go template
+        #[arg(long, value_name = "string")]
+        format: Option<String>,
+
+        /// Don't truncate output
+        #[arg(long)]
+        no_trunc: bool,
+
+        /// Only show image IDs
+        #[arg(short, long)]
+        quiet: bool,
+    },
+
+    /// Gets the logs of a given container unless 2 or more containers are found on remote nodes
+    Logs {
+        /// Container name or id
+        container_id: String,
+
+        /// Show extra details provided to logs
+        #[arg(long)]
+        details: bool,
+
+        /// Follow the log output
+        #[arg(short, long)]
+        follow: bool,
+
+        /// Show logs since timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+        #[arg(long, value_name = "string")]
+        since: Option<String>,
+
+        /// Number of lines to show from the end of the logs (default "all")
+        #[arg(long, value_name = "string")]
+        tail: Option<String>,
+
+        /// Show timestamps
+        #[arg(short, long)]
+        timestamps: bool,
+
+        /// Show logs before a timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+        #[arg(long, value_name = "string")]
+        until: Option<String>,
+    },
+
     /// Lists all containers on remote nodes
     Ps {
         /// Show all containers (default shows just running)
@@ -98,35 +155,5 @@ pub enum Command {
     Stop {
         /// Container name or id
         container_id: String,
-    },
-
-    /// Gets the logs of a given container unless 2 or more containers are found on remote nodes
-    Logs {
-        /// Container name or id
-        container_id: String,
-
-        /// Show extra details provided to logs
-        #[arg(long)]
-        details: bool,
-
-        /// Follow the log output
-        #[arg(short, long)]
-        follow: bool,
-
-        /// Show logs since timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
-        #[arg(long, value_name = "string")]
-        since: Option<String>,
-
-        /// Number of lines to show from the end of the logs (default "all")
-        #[arg(long, value_name = "string")]
-        tail: Option<String>,
-
-        /// Show timestamps
-        #[arg(short, long)]
-        timestamps: bool,
-
-        /// Show logs before a timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
-        #[arg(long, value_name = "string")]
-        until: Option<String>,
     },
 }

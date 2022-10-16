@@ -72,91 +72,6 @@ impl LogsFlags {
     }
 }
 
-pub struct PsFlags {
-    pub all: bool,
-    pub filter: String,
-    pub format: String,
-    pub last: bool,
-    pub latests: bool,
-    pub no_trunc: bool,
-    pub quiet: bool,
-    pub size: bool,
-}
-
-#[allow(clippy::too_many_arguments)]
-impl PsFlags {
-    pub fn new(
-        all: bool,
-        filter: Option<String>,
-        format: Option<String>,
-        last: bool,
-        latests: bool,
-        no_trunc: bool,
-        quiet: bool,
-        size: bool,
-    ) -> Self {
-        let filter: String = match filter {
-            Some(filter) => filter,
-            None => "".into(),
-        };
-        let format: String = match format {
-            Some(format) => format,
-            None => "".into(),
-        };
-
-        Self {
-            all,
-            filter,
-            format,
-            last,
-            latests,
-            no_trunc,
-            quiet,
-            size,
-        }
-    }
-
-    pub fn flags(&self) -> Vec<String> {
-        let mut v: Vec<String> = vec![];
-        if self.all {
-            v.push("-a".into())
-        }
-
-        if !self.filter.is_empty() {
-            v.push("--filter".into());
-            v.push(self.filter.clone());
-        };
-
-        if !self.format.is_empty() {
-            v.push("--format".into());
-            v.push(self.format.clone());
-        };
-
-        if self.last {
-            v.push("--last".into())
-        }
-
-        if self.last {
-            v.push("--last".into())
-        }
-
-        if self.latests {
-            v.push("--latests".into())
-        }
-        if self.no_trunc {
-            v.push("--no_trunc".into())
-        }
-        if self.quiet {
-            v.push("--quiet".into())
-        }
-        if self.size {
-            v.push("--size".into())
-        }
-
-        v
-    }
-}
-
 #[derive(Debug)]
 pub struct ExecFlags {
     pub detach: bool,
@@ -265,6 +180,161 @@ impl ExecFlags {
         }
         // This one is not actually useful since this program is not a tty
         // tty: bool,
+
+        v
+    }
+}
+
+pub struct ImagesFlags {
+    all: bool,
+    digest: bool,
+    filter: String,
+    format: String,
+    no_trunc: bool,
+    quiet: bool,
+}
+
+impl ImagesFlags {
+    pub fn new(
+        all: bool,
+        digest: bool,
+        filter: Option<String>,
+        format: Option<String>,
+        no_trunc: bool,
+        quiet: bool,
+    ) -> Self {
+        let filter = match filter {
+            Some(f) => f,
+            None => "".into(),
+        };
+
+        let format = match format {
+            Some(fo) => fo,
+            None => "".into(),
+        };
+
+        Self {
+            all,
+            digest,
+            filter,
+            format,
+            no_trunc,
+            quiet,
+        }
+    }
+
+    pub fn flags(&self) -> Vec<String> {
+        let mut v: Vec<String> = vec![];
+        if self.all {
+            v.push("-".into());
+        }
+
+        if self.digest {
+            v.push("--digest".into());
+        }
+
+        if !self.filter.is_empty() {
+            v.push("--filter".into());
+            v.push(self.filter.clone());
+        }
+
+        if !self.format.is_empty() {
+            v.push("--format".into());
+            v.push(self.format.clone());
+        }
+
+        if self.no_trunc {
+            v.push("--no-trunc".into());
+        }
+
+        if self.quiet {
+            v.push("--quiet".into());
+        }
+
+        v
+    }
+}
+
+pub struct PsFlags {
+    pub all: bool,
+    pub filter: String,
+    pub format: String,
+    pub last: bool,
+    pub latests: bool,
+    pub no_trunc: bool,
+    pub quiet: bool,
+    pub size: bool,
+}
+
+#[allow(clippy::too_many_arguments)]
+impl PsFlags {
+    pub fn new(
+        all: bool,
+        filter: Option<String>,
+        format: Option<String>,
+        last: bool,
+        latests: bool,
+        no_trunc: bool,
+        quiet: bool,
+        size: bool,
+    ) -> Self {
+        let filter: String = match filter {
+            Some(filter) => filter,
+            None => "".into(),
+        };
+        let format: String = match format {
+            Some(format) => format,
+            None => "".into(),
+        };
+
+        Self {
+            all,
+            filter,
+            format,
+            last,
+            latests,
+            no_trunc,
+            quiet,
+            size,
+        }
+    }
+
+    pub fn flags(&self) -> Vec<String> {
+        let mut v: Vec<String> = vec![];
+        if self.all {
+            v.push("-a".into())
+        }
+
+        if !self.filter.is_empty() {
+            v.push("--filter".into());
+            v.push(self.filter.clone());
+        };
+
+        if !self.format.is_empty() {
+            v.push("--format".into());
+            v.push(self.format.clone());
+        };
+
+        if self.last {
+            v.push("--last".into())
+        }
+
+        if self.last {
+            v.push("--last".into())
+        }
+
+        if self.latests {
+            v.push("--latests".into())
+        }
+        if self.no_trunc {
+            v.push("--no_trunc".into())
+        }
+        if self.quiet {
+            v.push("--quiet".into())
+        }
+        if self.size {
+            v.push("--size".into())
+        }
 
         v
     }
