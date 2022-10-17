@@ -7,6 +7,10 @@ pub struct App {
     #[arg(short, long)]
     pub sudo: bool,
 
+    /// Filters nodes on a given patterns
+    #[arg(short, long, value_name = "regex")]
+    pub regex: Option<String>,
+
     /// This command will be ran on the remote nodes
     #[command(subcommand)]
     pub command: Command,

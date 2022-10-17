@@ -4,20 +4,41 @@ use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags};
 use crate::cli::Command;
 use crate::utility::command;
 
+use regex::Regex;
+
 #[derive(Debug)]
 pub struct Client {
     nodes: Vec<Node>,
 }
 
 impl Client {
-    pub fn from_config<A: AsRef<Path>>(config_path: A) -> Self {
+    pub fn from_config<A: AsRef<Path>>(config_path: A, regex: Option<String>) -> Self {
         let file_contents = std::fs::read_to_string(config_path).unwrap_or_else(|_| "".into());
+
+        let _re = match regex {
+            Some(ref pattern) => Regex::new(pattern),
+            None => Regex::new(".*"),
+        };
+
+        let re = match _re {
+            Ok(regex) => regex,
+            Err(e) => {
+                eprintln!(
+                    "Some error has occured while compiling your regex patterns {}\n{}",
+                    regex.unwrap(),
+                    e
+                );
+                std::process::exit(1)
+            }
+        };
 
         let mut nodes: Vec<Node> = vec![];
         for line in file_contents.split('\n') {
             if !line.contains('#') && line.starts_with("Host") {
                 let s: String = line.replace("  ", "").split(' ').nth(1).unwrap().into();
-                nodes.push(Node::new(s))
+                if re.is_match(&s) {
+                    nodes.push(Node::new(s));
+                }
             }
         }
 
@@ -171,7 +192,7 @@ mod tests {
 
     #[test]
     fn test_from_config() {
-        let client = Client::from_config("test_files/mock_ssh_config");
+        let client = Client::from_config("test_files/mock_ssh_config", Some(".*".into()));
         let correct_nodes: Vec<String> = vec!["abc".into(), "def".into(), "ghi".into()];
 
         let nodes: Vec<String> = client
@@ -184,8 +205,29 @@ mod tests {
     }
 
     #[test]
+    fn test_from_config_regex() {
+        let client = Client::from_config(
+            "test_files/mock_ssh_config_regex",
+            Some("regex_pattern.*".into()),
+        );
+        let correct_nodes: Vec<String> = vec![
+            "regex_pattern".into(),
+            "regex_patterndef".into(),
+            "regex_patternghi".into(),
+        ];
+
+        let nodes: Vec<String> = client
+            .nodes
+            .iter()
+            .map(|node| node.address.clone())
+            .collect();
+
+        assert_eq!(correct_nodes, nodes);
+    }
+
+    #[test]
     fn test_client_info() {
-        let client = Client::from_config("test_files/mock_ssh_config");
+        let client = Client::from_config("test_files/mock_ssh_config", Some(".*".into()));
         let correct_nodes: Vec<(String, Node)> = vec![
             (String::from("abc"), Node::new("abc".into())),
             (String::from("def"), Node::new("def".into())),

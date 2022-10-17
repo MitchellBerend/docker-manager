@@ -1,0 +1,17 @@
+Host regex_pattern
+    Hostname 0.0.0.0
+    Someotheroption
+
+# Hostname THIS_SHOULD_NOT_SHOW
+#     Host 1.1.1.1O
+
+Host regex_patterndef
+    Hostname 0.0.0.0
+    Someotheroption
+
+Host regex_patternghi
+    Hostname 0.0.0.0
+    Someotheroption
+
+Host asdfklasdfasdf
+    Hostname 0.0.0.0
