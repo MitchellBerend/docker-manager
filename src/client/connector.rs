@@ -206,8 +206,15 @@ mod tests {
 
     #[test]
     fn test_from_config_regex() {
-        let client = Client::from_config("test_files/mock_ssh_config_regex", Some("regex_pattern.*".into()));
-        let correct_nodes: Vec<String> = vec!["regex_pattern".into(), "regex_patterndef".into(), "regex_patternghi".into()];
+        let client = Client::from_config(
+            "test_files/mock_ssh_config_regex",
+            Some("regex_pattern.*".into()),
+        );
+        let correct_nodes: Vec<String> = vec![
+            "regex_pattern".into(),
+            "regex_patterndef".into(),
+            "regex_patternghi".into(),
+        ];
 
         let nodes: Vec<String> = client
             .nodes
