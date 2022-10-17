@@ -6,12 +6,16 @@ use crate::cli::Command;
 use crate::client::{Client, Node, NodeError};
 use crate::utility::find_container;
 
-pub async fn run_command(command: Command, sudo: bool) -> Vec<Result<String, CommandError>> {
+pub async fn run_command(
+    command: Command,
+    sudo: bool,
+    regex: Option<String>,
+) -> Vec<Result<String, CommandError>> {
     let config_path = format!(
         "{}/.ssh/config",
         std::env::var("HOME").unwrap_or_else(|_| "/home/root".into())
     );
-    let client = Client::from_config(config_path);
+    let client = Client::from_config(config_path, regex);
 
     match command {
         Command::Completion { shell: _ } => {
