@@ -27,3 +27,6 @@ to support all docker commands on remote nodes.
 
 `-s`/`--sudo` Enables sudo on the remote node. This might be needed depending on
 how the remote node and it's user is set up.
+
+`-r`/`--regex` Lets the user supply a regex pattern that filters the nodes after
+they are read in from `~/.ssh/config`.
