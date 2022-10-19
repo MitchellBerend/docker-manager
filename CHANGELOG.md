@@ -1,8 +1,11 @@
 ## Added
 
+
+v0.0.5
+---
+
 [[#21](https://github.com/MitchellBerend/docker-manager/issues/21)] Remove implicit sudo call
 [[#12](https://github.com/MitchellBerend/docker-manager/issues/12)] Added a flag to filter nodes
-
 
 ## Added
 
