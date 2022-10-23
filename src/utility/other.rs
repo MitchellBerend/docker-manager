@@ -40,18 +40,54 @@ pub async fn find_container(
         .collect::<Vec<(String, Result<String, NodeError>)>>()
         .await
         .iter()
-        .filter_map(|(hostname, result)| match result {
-            Ok(s) => {
-                if s.contains(&container_id) {
-                    Some((
-                        hostname.clone(),
-                        String::from(s.split('\n').next().unwrap_or("")),
-                    ))
-                } else {
-                    None
-                }
-            }
-            Err(_) => None,
-        })
+        .filter_map(|(hostname, result)| node_filter_map((hostname, result), container_id))
         .collect::<Vec<(String, String)>>()
+}
+
+fn node_filter_map(
+    hostname_node: (&str, &Result<String, NodeError>),
+    container_id: &str,
+) -> Option<(String, String)> {
+    match hostname_node.1 {
+        Ok(s) => {
+            if s.contains(&container_id) {
+                Some((
+                    hostname_node.0.to_string(),
+                    String::from(s.split('\n').next().unwrap_or("")),
+                ))
+            } else {
+                None
+            }
+        }
+        Err(_) => None,
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{node_filter_map, NodeError};
+
+    #[test]
+    fn test_node_filter_map() {
+        let container_id = String::from("123123123");
+        let original: Vec<(String, Result<String, NodeError>)> = vec![
+            ("123123123".into(), Ok("123123123".into())),
+            ("123123123".into(), Ok("123123123".into())),
+            ("123123123".into(), Ok("123123123".into())),
+            ("asdjkfhas".into(), Ok("asdjkfhas".into())),
+        ];
+
+        let new = original
+            .into_iter()
+            .filter_map(|(hostname, result)| node_filter_map((&hostname, &result), &container_id))
+            .collect::<Vec<(String, String)>>();
+
+        let correct: Vec<(String, String)> = vec![
+            ("123123123".into(), "123123123".into()),
+            ("123123123".into(), "123123123".into()),
+            ("123123123".into(), "123123123".into()),
+        ];
+
+        assert_eq!(new, correct);
+    }
 }
