@@ -1,4 +1,6 @@
-pub mod constants;
+pub mod constants {
+    pub const CONCURRENT_REQUESTS: usize = 10;
+}
 
 mod cli;
 mod client;
@@ -7,6 +9,8 @@ mod utility;
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 
+// This lint option should be allowed because it is the current way to print results to stdout.
+#[allow(clippy::print_stdout)]
 pub async fn run() {
     let mut _cli = cli::App::parse();
 
