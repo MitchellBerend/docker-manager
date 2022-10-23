@@ -40,16 +40,18 @@ pub async fn find_container(
         .collect::<Vec<(String, Result<String, NodeError>)>>()
         .await
         .iter()
-        .filter(|(_, result)| match result {
-            Ok(s) => s.contains(&container_id),
-            Err(_) => false,
-        })
-        .map(|(hostname, result)| match result {
-            Ok(s) => (
-                hostname.clone(),
-                String::from(s.split('\n').next().unwrap_or("")),
-            ),
-            Err(_) => (hostname.clone(), String::from("")),
+        .filter_map(|(hostname, result)| match result {
+            Ok(s) => {
+                if s.contains(&container_id) {
+                    Some((
+                        hostname.clone(),
+                        String::from(s.split('\n').next().unwrap_or("")),
+                    ))
+                } else {
+                    None
+                }
+            }
+            Err(_) => None,
         })
         .collect::<Vec<(String, String)>>()
 }

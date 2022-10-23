@@ -127,7 +127,7 @@ pub async fn run_command(
                     vec![Err(CommandError::NoNodesFound(container_id))]
                 }
                 1 => {
-                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
+                    // unwrap is safe here since we check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
                     match node

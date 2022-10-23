@@ -1,4 +1,6 @@
-pub mod constants;
+pub mod constants {
+    pub const CONCURRENT_REQUESTS: usize = 10;
+}
 
 mod cli;
 mod client;
