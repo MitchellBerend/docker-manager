@@ -158,10 +158,10 @@ pub async fn run_logs(
 
         let mut rv: String = format!("{}\n", hostname);
 
-        match output.status.code().unwrap() {
-            0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
-            _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
-        };
+        // docker logs prints the logs to standard error so it does not matter if the command
+        // succeeded or not
+        rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or(""));
+
         Ok(rv)
     }
 }
