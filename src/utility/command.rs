@@ -1,22 +1,22 @@
 use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags};
 
 pub async fn run_exec(
-    hostname: String,
+    hostname: &str,
     session: openssh::Session,
-    container_id: String,
+    container_id: &str,
     sudo: bool,
     command: Vec<String>,
     //args: Option<Vec<String>>,
-    flags: ExecFlags,
+    flags: ExecFlags<'_>,
 ) -> Result<String, openssh::Error> {
-    let mut _command: Vec<String> = vec!["exec".into()];
+    let mut _command: Vec<&str> = vec!["exec"];
 
     for flag in &flags.flags() {
-        _command.push(flag.clone());
+        _command.push(flag);
     }
     _command.push(container_id);
 
-    for arg in command {
+    for arg in &command {
         _command.push(arg);
     }
 
@@ -66,12 +66,12 @@ pub async fn run_exec(
 }
 
 pub async fn run_images(
-    hostname: String,
+    hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    flags: ImagesFlags,
+    flags: ImagesFlags<'_>,
 ) -> Result<String, openssh::Error> {
-    let mut command: Vec<String> = vec!["images".into()];
+    let mut command: Vec<&str> = vec!["images"];
 
     for flag in flags.flags() {
         command.push(flag)
@@ -104,20 +104,20 @@ pub async fn run_images(
 }
 
 pub async fn run_logs(
-    hostname: String,
+    hostname: &str,
     session: openssh::Session,
-    container_id: String,
+    container_id: &str,
     sudo: bool,
-    flags: LogsFlags,
+    flags: LogsFlags<'_>,
 ) -> Result<String, openssh::Error> {
-    let mut command: Vec<String> = vec!["logs".into()];
+    let mut command: Vec<&str> = vec!["logs"];
 
     for item in flags.flags() {
         command.push(item)
     }
 
     if flags.follow {
-        command.push("-f".into());
+        command.push("-f");
         command.push(container_id);
 
         // This needs to be mutable so the stdout can be written to
@@ -166,12 +166,12 @@ pub async fn run_logs(
     }
 }
 pub async fn run_ps(
-    hostname: String,
+    hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    flags: PsFlags,
+    flags: PsFlags<'_>,
 ) -> Result<String, openssh::Error> {
-    let mut command: Vec<String> = vec!["ps".into()];
+    let mut command: Vec<&str> = vec!["ps"];
 
     for flag in flags.flags() {
         command.push(flag)
@@ -204,12 +204,12 @@ pub async fn run_ps(
 }
 
 pub async fn run_stop(
-    hostname: String,
+    hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    container_id: String,
+    container_id: &str,
 ) -> Result<String, openssh::Error> {
-    let command = vec!["stop", &container_id];
+    let command = vec!["stop", container_id];
 
     let _output = match sudo {
         true => {

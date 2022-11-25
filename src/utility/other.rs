@@ -50,7 +50,7 @@ fn node_filter_map(
 ) -> Option<(String, String)> {
     match hostname_node.1 {
         Ok(s) => {
-            if s.contains(&container_id) {
+            if s.contains(container_id) {
                 Some((
                     hostname_node.0.to_string(),
                     String::from(s.split('\n').next().unwrap_or("")),
