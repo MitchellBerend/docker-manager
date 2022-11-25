@@ -87,9 +87,9 @@ pub async fn run_command(
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
                     let _filter: Option<String> =
-                        filter.as_ref().map(|filter| String::from(&filter.clone()));
+                        filter.as_ref().map(|filter| String::from(filter));
                     let _format: Option<String> =
-                        format.as_ref().map(|format| String::from(&format.clone()));
+                        format.as_ref().map(|format| String::from(format));
                     match node
                         .run_command(
                             Command::Images {
@@ -171,9 +171,9 @@ pub async fn run_command(
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
                     let _filter: Option<String> =
-                        filter.as_ref().map(|filter| String::from(&filter.clone()));
+                        filter.as_ref().map(|filter| String::from(filter));
                     let _format: Option<String> =
-                        format.as_ref().map(|format| String::from(&format.clone()));
+                        format.as_ref().map(|format| String::from(format));
                     match node
                         .run_command(
                             Command::Ps {

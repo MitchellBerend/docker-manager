@@ -100,15 +100,8 @@ impl Node {
                     user,
                     workdir,
                 );
-                match command::run_exec(
-                    self.address.clone(),
-                    session,
-                    container_id,
-                    sudo,
-                    command,
-                    flags,
-                )
-                .await
+                match command::run_exec(&self.address, session, container_id, sudo, command, flags)
+                    .await
                 {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
@@ -124,7 +117,7 @@ impl Node {
             } => {
                 let flags = ImagesFlags::new(all, digest, filter, format, no_trunc, quiet);
 
-                match command::run_images(self.address.clone(), session, sudo, flags).await {
+                match command::run_images(&self.address, session, sudo, flags).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
@@ -140,9 +133,7 @@ impl Node {
             } => {
                 let flags = LogsFlags::new(details, follow, since, tail, timestamps, until);
 
-                match command::run_logs(self.address.clone(), session, container_id, sudo, flags)
-                    .await
-                {
+                match command::run_logs(&self.address, session, container_id, sudo, flags).await {
                     //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
@@ -159,13 +150,13 @@ impl Node {
                 size,
             } => {
                 let flags = PsFlags::new(all, filter, format, last, latests, no_trunc, quiet, size);
-                match command::run_ps(self.address.clone(), session, sudo, flags).await {
+                match command::run_ps(&self.address, session, sudo, flags).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
             Command::Stop { container_id } => {
-                match command::run_stop(self.address.clone(), session, sudo, container_id).await {
+                match command::run_stop(&self.address, session, sudo, container_id).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }

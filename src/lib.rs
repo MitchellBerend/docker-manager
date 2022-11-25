@@ -4,6 +4,7 @@ pub mod constants {
 
 mod cli;
 mod client;
+mod formatter;
 mod utility;
 
 use clap::{CommandFactory, Parser};

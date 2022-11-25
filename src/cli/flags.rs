@@ -39,8 +39,8 @@ impl LogsFlags {
         }
     }
 
-    pub fn flags(&self) -> Vec<String> {
-        let mut v: Vec<String> = vec![];
+    pub fn flags(&self) -> Vec<&str> {
+        let mut v: Vec<&str> = vec![];
         if self.details {
             v.push("-d".into())
         }
@@ -50,22 +50,22 @@ impl LogsFlags {
         //    v.push("-f".into())
 
         if !self.since.is_empty() {
-            v.push("--since".into());
-            v.push(self.since.clone());
+            v.push("--since");
+            v.push(&self.since);
         };
 
         if !self.tail.is_empty() {
-            v.push("--tail".into());
-            v.push(self.tail.clone());
+            v.push("--tail");
+            v.push(&self.tail);
         };
 
         if self.timestamps {
-            v.push("--timestamps".into())
+            v.push("--timestamps")
         }
 
         if !self.until.is_empty() {
-            v.push("--until".into());
-            v.push(self.until.clone());
+            v.push("--until");
+            v.push(&self.until);
         };
 
         v
@@ -136,47 +136,47 @@ impl ExecFlags {
         }
     }
 
-    pub fn flags(&self) -> Vec<String> {
-        let mut v: Vec<String> = vec![];
+    pub fn flags(&self) -> Vec<&str> {
+        let mut v: Vec<&str> = vec![];
         if self.detach {
-            v.push("-d".into());
+            v.push("-d");
         }
 
         if self.interactive {
-            v.push("-i".into());
+            v.push("-i");
         }
 
         if self.privileged {
-            v.push("--privileged".into());
+            v.push("--privileged");
         }
 
         if !self.detach_keys.is_empty() {
-            v.push("--detach-keys".into());
-            v.push(self.detach_keys.clone());
+            v.push("--detach-keys");
+            v.push(&self.detach_keys);
         }
 
         if !self.env.is_empty() {
             for var in &self.env {
-                v.push("-e".into());
-                v.push(var.clone());
+                v.push("-e");
+                v.push(&var);
             }
         }
 
         if !self.env_file.is_empty() {
             for file in &self.env_file {
                 v.push("--env-file".into());
-                v.push(file.clone());
+                v.push(&file);
             }
         }
 
         if !self.user.is_empty() {
-            v.push("--user".into());
-            v.push(self.user.clone());
+            v.push("--user");
+            v.push(&self.user);
         }
 
         if !self.workdir.is_empty() {
-            v.push("--workdir".into());
-            v.push(self.workdir.clone());
+            v.push("--workdir");
+            v.push(&self.workdir);
         }
         // This one is not actually useful since this program is not a tty
         // tty: bool,
@@ -223,32 +223,32 @@ impl ImagesFlags {
         }
     }
 
-    pub fn flags(&self) -> Vec<String> {
-        let mut v: Vec<String> = vec![];
+    pub fn flags(&self) -> Vec<&str> {
+        let mut v: Vec<&str> = vec![];
         if self.all {
-            v.push("-".into());
+            v.push("-");
         }
 
         if self.digest {
-            v.push("--digest".into());
+            v.push("--digest");
         }
 
         if !self.filter.is_empty() {
-            v.push("--filter".into());
-            v.push(self.filter.clone());
+            v.push("--filter");
+            v.push(&self.filter);
         }
 
         if !self.format.is_empty() {
-            v.push("--format".into());
-            v.push(self.format.clone());
+            v.push("--format");
+            v.push(&self.format);
         }
 
         if self.no_trunc {
-            v.push("--no-trunc".into());
+            v.push("--no-trunc");
         }
 
         if self.quiet {
-            v.push("--quiet".into());
+            v.push("--quiet");
         }
 
         v
@@ -299,41 +299,41 @@ impl PsFlags {
         }
     }
 
-    pub fn flags(&self) -> Vec<String> {
-        let mut v: Vec<String> = vec![];
+    pub fn flags(&self) -> Vec<&str> {
+        let mut v: Vec<&str> = vec![];
         if self.all {
-            v.push("-a".into())
+            v.push("-a")
         }
 
         if !self.filter.is_empty() {
-            v.push("--filter".into());
-            v.push(self.filter.clone());
+            v.push("--filter");
+            v.push(&self.filter);
         };
 
         if !self.format.is_empty() {
-            v.push("--format".into());
-            v.push(self.format.clone());
+            v.push("--format");
+            v.push(&self.format);
         };
 
         if self.last {
-            v.push("--last".into())
+            v.push("--last")
         }
 
         if self.last {
-            v.push("--last".into())
+            v.push("--last")
         }
 
         if self.latests {
-            v.push("--latests".into())
+            v.push("--latests")
         }
         if self.no_trunc {
-            v.push("--no_trunc".into())
+            v.push("--no_trunc")
         }
         if self.quiet {
-            v.push("--quiet".into())
+            v.push("--quiet")
         }
         if self.size {
-            v.push("--size".into())
+            v.push("--size")
         }
 
         v
