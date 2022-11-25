@@ -1,38 +1,38 @@
-pub struct LogsFlags {
+pub struct LogsFlags<'a> {
     pub details: bool,
     pub follow: bool,
-    pub since: String,
-    pub tail: String,
+    pub since: &'a str,
+    pub tail: &'a str,
     pub timestamps: bool,
-    pub until: String,
+    pub until: &'a str,
 }
 
-impl LogsFlags {
+impl<'a> LogsFlags<'a> {
     pub fn new(
         details: bool,
         follow: bool,
-        since: Option<String>,
-        tail: Option<String>,
+        since: &'a Option<String>,
+        tail: &'a Option<String>,
         timestamps: bool,
-        until: Option<String>,
+        until: &'a Option<String>,
     ) -> Self {
-        let since: String = match since {
+        let _since: &str = match since {
             Some(since) => since,
-            None => "".into(),
+            None => "",
         };
-        let tail: String = match tail {
+        let tail: &str = match tail {
             Some(tail) => tail,
-            None => "".into(),
+            None => "",
         };
-        let until: String = match until {
+        let until: &str = match until {
             Some(until) => until,
-            None => "".into(),
+            None => "",
         };
 
         Self {
             details,
             follow,
-            since,
+            since: _since,
             tail,
             timestamps,
             until,
@@ -42,7 +42,7 @@ impl LogsFlags {
     pub fn flags(&self) -> Vec<&str> {
         let mut v: Vec<&str> = vec![];
         if self.details {
-            v.push("-d".into())
+            v.push("-d")
         }
 
         // special case which is handled in the run_logs function
@@ -51,12 +51,12 @@ impl LogsFlags {
 
         if !self.since.is_empty() {
             v.push("--since");
-            v.push(&self.since);
+            v.push(self.since);
         };
 
         if !self.tail.is_empty() {
             v.push("--tail");
-            v.push(&self.tail);
+            v.push(self.tail);
         };
 
         if self.timestamps {
@@ -65,7 +65,7 @@ impl LogsFlags {
 
         if !self.until.is_empty() {
             v.push("--until");
-            v.push(&self.until);
+            v.push(self.until);
         };
 
         v
@@ -73,34 +73,34 @@ impl LogsFlags {
 }
 
 #[derive(Debug)]
-pub struct ExecFlags {
+pub struct ExecFlags<'a> {
     pub detach: bool,
-    pub detach_keys: String,
+    pub detach_keys: &'a str,
     pub env: Vec<String>,
     pub env_file: Vec<String>,
     pub interactive: bool,
     pub privileged: bool,
     //pub tty: bool,
-    pub user: String,
-    pub workdir: String,
+    pub user: &'a str,
+    pub workdir: &'a str,
 }
 
-impl ExecFlags {
+impl<'a> ExecFlags<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         detach: bool,
-        detach_keys: Option<String>,
+        detach_keys: &'a Option<String>,
         env: Option<Vec<String>>,
         env_file: Option<Vec<String>>,
         interactive: bool,
         privileged: bool,
         //tty: bool,
-        user: Option<String>,
-        workdir: Option<String>,
+        user: &'a Option<String>,
+        workdir: &'a Option<String>,
     ) -> Self {
-        let detach_keys = match detach_keys {
+        let detach_keys = match &detach_keys {
             Some(d) => d,
-            None => "".into(),
+            None => "",
         };
 
         let env = match env {
@@ -113,14 +113,14 @@ impl ExecFlags {
             None => vec![],
         };
 
-        let user = match user {
+        let user = match &user {
             Some(u) => u,
-            None => "".into(),
+            None => "",
         };
 
-        let workdir = match workdir {
+        let workdir = match &workdir {
             Some(w) => w,
-            None => "".into(),
+            None => "",
         };
 
         Self {
@@ -152,31 +152,31 @@ impl ExecFlags {
 
         if !self.detach_keys.is_empty() {
             v.push("--detach-keys");
-            v.push(&self.detach_keys);
+            v.push(self.detach_keys);
         }
 
         if !self.env.is_empty() {
             for var in &self.env {
                 v.push("-e");
-                v.push(&var);
+                v.push(var);
             }
         }
 
         if !self.env_file.is_empty() {
             for file in &self.env_file {
-                v.push("--env-file".into());
-                v.push(&file);
+                v.push("--env-file");
+                v.push(file);
             }
         }
 
         if !self.user.is_empty() {
             v.push("--user");
-            v.push(&self.user);
+            v.push(self.user);
         }
 
         if !self.workdir.is_empty() {
             v.push("--workdir");
-            v.push(&self.workdir);
+            v.push(self.workdir);
         }
         // This one is not actually useful since this program is not a tty
         // tty: bool,
@@ -185,32 +185,32 @@ impl ExecFlags {
     }
 }
 
-pub struct ImagesFlags {
+pub struct ImagesFlags<'a> {
     all: bool,
     digest: bool,
-    filter: String,
-    format: String,
+    filter: &'a str,
+    format: &'a str,
     no_trunc: bool,
     quiet: bool,
 }
 
-impl ImagesFlags {
+impl<'a> ImagesFlags<'a> {
     pub fn new(
         all: bool,
         digest: bool,
-        filter: Option<String>,
-        format: Option<String>,
+        filter: &'a Option<String>,
+        format: &'a Option<String>,
         no_trunc: bool,
         quiet: bool,
     ) -> Self {
-        let filter = match filter {
+        let filter = match &filter {
             Some(f) => f,
-            None => "".into(),
+            None => "",
         };
 
-        let format = match format {
+        let format = match &format {
             Some(fo) => fo,
-            None => "".into(),
+            None => "",
         };
 
         Self {
@@ -235,12 +235,12 @@ impl ImagesFlags {
 
         if !self.filter.is_empty() {
             v.push("--filter");
-            v.push(&self.filter);
+            v.push(self.filter);
         }
 
         if !self.format.is_empty() {
             v.push("--format");
-            v.push(&self.format);
+            v.push(self.format);
         }
 
         if self.no_trunc {
@@ -255,10 +255,10 @@ impl ImagesFlags {
     }
 }
 
-pub struct PsFlags {
+pub struct PsFlags<'a> {
     pub all: bool,
-    pub filter: String,
-    pub format: String,
+    pub filter: &'a str,
+    pub format: &'a str,
     pub last: bool,
     pub latests: bool,
     pub no_trunc: bool,
@@ -267,24 +267,24 @@ pub struct PsFlags {
 }
 
 #[allow(clippy::too_many_arguments)]
-impl PsFlags {
+impl<'a> PsFlags<'a> {
     pub fn new(
         all: bool,
-        filter: Option<String>,
-        format: Option<String>,
+        filter: &'a Option<String>,
+        format: &'a Option<String>,
         last: bool,
         latests: bool,
         no_trunc: bool,
         quiet: bool,
         size: bool,
     ) -> Self {
-        let filter: String = match filter {
+        let filter: &str = match filter {
             Some(filter) => filter,
-            None => "".into(),
+            None => "",
         };
-        let format: String = match format {
+        let format: &str = match format {
             Some(format) => format,
-            None => "".into(),
+            None => "",
         };
 
         Self {
@@ -307,12 +307,12 @@ impl PsFlags {
 
         if !self.filter.is_empty() {
             v.push("--filter");
-            v.push(&self.filter);
+            v.push(self.filter);
         };
 
         if !self.format.is_empty() {
             v.push("--format");
-            v.push(&self.format);
+            v.push(self.format);
         };
 
         if self.last {

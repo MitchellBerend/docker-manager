@@ -12,11 +12,11 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn from_config<A: AsRef<Path>>(config_path: A, regex: Option<String>) -> Self {
+    pub fn from_config<A: AsRef<Path>>(config_path: A, regex: Option<&str>) -> Self {
         let file_contents = std::fs::read_to_string(config_path).unwrap_or_else(|_| "".into());
 
         let _re = match regex {
-            Some(ref pattern) => Regex::new(pattern),
+            Some(pattern) => Regex::new(pattern),
             None => Regex::new(".*"),
         };
 
@@ -92,15 +92,15 @@ impl Node {
             } => {
                 let flags = ExecFlags::new(
                     detach,
-                    detach_keys,
+                    &detach_keys,
                     env,
                     env_file,
                     interactive,
                     privileged,
-                    user,
-                    workdir,
+                    &user,
+                    &workdir,
                 );
-                match command::run_exec(&self.address, session, container_id, sudo, command, flags)
+                match command::run_exec(&self.address, session, &container_id, sudo, command, flags)
                     .await
                 {
                     Ok(result) => Ok(result),
@@ -115,7 +115,7 @@ impl Node {
                 no_trunc,
                 quiet,
             } => {
-                let flags = ImagesFlags::new(all, digest, filter, format, no_trunc, quiet);
+                let flags = ImagesFlags::new(all, digest, &filter, &format, no_trunc, quiet);
 
                 match command::run_images(&self.address, session, sudo, flags).await {
                     Ok(result) => Ok(result),
@@ -131,9 +131,9 @@ impl Node {
                 timestamps,
                 until,
             } => {
-                let flags = LogsFlags::new(details, follow, since, tail, timestamps, until);
+                let flags = LogsFlags::new(details, follow, &since, &tail, timestamps, &until);
 
-                match command::run_logs(&self.address, session, container_id, sudo, flags).await {
+                match command::run_logs(&self.address, session, &container_id, sudo, flags).await {
                     //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
@@ -149,14 +149,15 @@ impl Node {
                 quiet,
                 size,
             } => {
-                let flags = PsFlags::new(all, filter, format, last, latests, no_trunc, quiet, size);
+                let flags =
+                    PsFlags::new(all, &filter, &format, last, latests, no_trunc, quiet, size);
                 match command::run_ps(&self.address, session, sudo, flags).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
             Command::Stop { container_id } => {
-                match command::run_stop(&self.address, session, sudo, container_id).await {
+                match command::run_stop(&self.address, session, sudo, &container_id).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }

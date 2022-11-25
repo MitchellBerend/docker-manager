@@ -4,7 +4,7 @@ pub mod constants {
 
 mod cli;
 mod client;
-mod formatter;
+//mod formatter;
 mod utility;
 
 use clap::{CommandFactory, Parser};
@@ -15,13 +15,17 @@ use clap_complete::generate;
 pub async fn run() {
     let mut _cli = cli::App::parse();
 
+    let regex: Option<&str> = match &_cli.regex {
+        Some(reg) => Some(reg),
+        None => None,
+    };
+
     match _cli.command {
         cli::Command::Completion { shell } => {
             generate_completion(shell);
         }
-
         _ => {
-            for word in utility::run_command(_cli.command, _cli.sudo, _cli.regex).await {
+            for word in utility::run_command(_cli.command, _cli.sudo, regex).await {
                 match word {
                     Ok(s) => println!("{}", s),
                     Err(e) => println!("{}", e),

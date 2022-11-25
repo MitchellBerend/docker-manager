@@ -9,7 +9,7 @@ use crate::utility::find_container;
 pub async fn run_command(
     command: Command,
     sudo: bool,
-    regex: Option<String>,
+    regex: Option<&str>,
 ) -> Vec<Result<String, CommandError>> {
     let config_path = format!(
         "{}/.ssh/config",
@@ -86,10 +86,8 @@ pub async fn run_command(
         } => {
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
-                    let _filter: Option<String> =
-                        filter.as_ref().map(|filter| String::from(filter));
-                    let _format: Option<String> =
-                        format.as_ref().map(|format| String::from(format));
+                    let _filter: Option<String> = filter.as_ref().map(String::from);
+                    let _format: Option<String> = format.as_ref().map(String::from);
                     match node
                         .run_command(
                             Command::Images {
@@ -170,10 +168,8 @@ pub async fn run_command(
         } => {
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
-                    let _filter: Option<String> =
-                        filter.as_ref().map(|filter| String::from(filter));
-                    let _format: Option<String> =
-                        format.as_ref().map(|format| String::from(format));
+                    let _filter: Option<String> = filter.as_ref().map(String::from);
+                    let _format: Option<String> = format.as_ref().map(String::from);
                     match node
                         .run_command(
                             Command::Ps {
