@@ -3,6 +3,7 @@ use std::io::Write;
 use defaultdict::DefaultHashMap;
 
 const HOSTNAME: &str = "HOSTNAME";
+const OFFSET: usize = 3;
 
 #[derive(Debug)]
 pub struct Parser {
@@ -63,32 +64,33 @@ impl Parser {
     pub fn print(&mut self) {
         for host in self.internal.keys() {
             let lines = self.internal.get(host);
+            let number = std::cmp::max(host.len() + OFFSET, self.header_spacing[&String::from(HOSTNAME)]);
+            self.header_spacing.insert(String::from(HOSTNAME), number);
             for line in lines {
                 for (header_index, item) in line.iter().enumerate() {
                     if let Some(header) = self.headers.get(header_index + 1) {
-                        let mut number =
-                            std::cmp::max(item.len(), *self.header_spacing.get(header));
-                        if header_index == 0 {
-                            number = std::cmp::max(host.len(), self.header_spacing[header]);
-                        }
+                        let number = std::cmp::max(item.len() + OFFSET, *self.header_spacing.get(header));
                         self.header_spacing.insert(header.to_owned(), number);
                     }
                 }
             }
         }
 
+
+        println!("{:#?}", self.header_spacing);
+
         let mut headers = String::new();
 
         for header in &self.headers {
             let spacing: usize = *self.header_spacing.get(header);
             headers.push_str(header);
-            if spacing > header.len() {
-                let offset = spacing - header.len() + 1;
+            if spacing >= header.len() {
+                let offset = spacing - header.len();
                 for _ in 0..offset {
                     headers.push(' ');
                 }
             }
-            headers.push('\t');
+            //headers.push('\t');
         }
 
         let mut body = String::new();
@@ -98,26 +100,26 @@ impl Parser {
             for line in lines {
                 let host_spacing: usize = *self.header_spacing.get(HOSTNAME);
                 let mut _body: String = String::from(host);
-                let offset = host_spacing - host.len() + 1;
-                for _ in 0..offset {
-                    _body.push(' ');
+                if host_spacing >= host.len() {
+                    let offset = host_spacing - host.len();
+                    for _ in 0..offset {
+                        _body.push(' ');
+                    }
                 }
-                _body.push('\t');
+                //_body.push('\t');
 
-                let mut index: usize = 0;
-                for item in line {
-                    if let Some(header) = self.headers.get(index) {
+                for (index, item) in line.iter().enumerate() {
+                    if let Some(header) = self.headers.get(index + 1) {
                         let spacing = *self.header_spacing.get(header);
                         _body.push_str(item);
 
-                        if spacing > item.len() {
-                            let offset = spacing - item.len() + 1;
+                        if spacing >= item.len() {
+                            let offset = spacing - item.len();
                             for _ in 0..offset {
                                 _body.push(' ');
                             }
                         }
-                        _body.push('\t');
-                        index += 1;
+                        //_body.push('\t');
                     }
                 }
                 body.push_str(&format!("{}\n", _body));
