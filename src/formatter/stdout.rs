@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use defaultdict::DefaultHashMap;
 
 const HOSTNAME: &str = "HOSTNAME";
@@ -64,20 +62,21 @@ impl Parser {
     pub fn print(&mut self) {
         for host in self.internal.keys() {
             let lines = self.internal.get(host);
-            let number = std::cmp::max(host.len() + OFFSET, self.header_spacing[&String::from(HOSTNAME)]);
+            let number = std::cmp::max(
+                host.len() + OFFSET,
+                self.header_spacing[&String::from(HOSTNAME)],
+            );
             self.header_spacing.insert(String::from(HOSTNAME), number);
             for line in lines {
                 for (header_index, item) in line.iter().enumerate() {
                     if let Some(header) = self.headers.get(header_index + 1) {
-                        let number = std::cmp::max(item.len() + OFFSET, *self.header_spacing.get(header));
+                        let number =
+                            std::cmp::max(item.len() + OFFSET, *self.header_spacing.get(header));
                         self.header_spacing.insert(header.to_owned(), number);
                     }
                 }
             }
         }
-
-
-        println!("{:#?}", self.header_spacing);
 
         let mut headers = String::new();
 
@@ -126,6 +125,6 @@ impl Parser {
             }
         }
 
-        writeln!(std::io::stdout(), "{}\n{}\n", headers, body).unwrap();
+        println!("{}\n{}\n", headers, body);
     }
 }

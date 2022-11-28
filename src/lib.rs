@@ -1,5 +1,3 @@
-use std::io::Write;
-
 pub mod constants {
     pub const CONCURRENT_REQUESTS: usize = 10;
 }
@@ -33,14 +31,14 @@ pub async fn run() {
                 match word {
                     Ok(s) => result.push_str(&s),
                     Err(e) => {
-                        writeln!(std::io::stdout(), "{}", e).unwrap();
+                        println!("{}", e);
                     }
                 }
             }
         }
     }
 
-    let mut parser = crate::formatter::Parser::from_command_results(result);
+    let mut parser = formatter::Parser::from_command_results(result);
 
     if parse {
         parser.print();
