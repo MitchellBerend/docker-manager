@@ -1,0 +1,28 @@
+name: Pre-release
+
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+
+  create-release-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build binary
+        run: cargo build --release
+      - uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            # These need to be the files that get built by cargo
+            target/release/docker-manager
+            CHANGELOG.md
