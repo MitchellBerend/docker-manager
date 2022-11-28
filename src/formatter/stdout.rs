@@ -89,7 +89,7 @@ impl Parser {
                     headers.push(' ');
                 }
             }
-            //headers.push('\t');
+            headers.push('\t');
         }
 
         let mut body = String::new();
@@ -105,7 +105,7 @@ impl Parser {
                         _body.push(' ');
                     }
                 }
-                //_body.push('\t');
+                _body.push('\t');
 
                 for (index, item) in line.iter().enumerate() {
                     if let Some(header) = self.headers.get(index + 1) {
@@ -118,7 +118,7 @@ impl Parser {
                                 _body.push(' ');
                             }
                         }
-                        //_body.push('\t');
+                        _body.push('\t');
                     }
                 }
                 body.push_str(&format!("{}\n", _body));
