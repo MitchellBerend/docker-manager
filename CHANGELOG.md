@@ -1,5 +1,7 @@
 ## Added
 
+[[#33](https://github.com/MitchellBerend/docker-manager/pull/33)] Added a formatter for ps command
+
 
 v0.0.5
 ---

@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn test_from_config() {
-        let client = Client::from_config("test_files/mock_ssh_config", Some(".*".into()));
+        let client = Client::from_config("test_files/mock_ssh_config", Some(".*"));
         let correct_nodes: Vec<String> = vec!["abc".into(), "def".into(), "ghi".into()];
 
         let nodes: Vec<String> = client
@@ -198,10 +198,8 @@ mod tests {
 
     #[test]
     fn test_from_config_regex() {
-        let client = Client::from_config(
-            "test_files/mock_ssh_config_regex",
-            Some("regex_pattern.*".into()),
-        );
+        let client =
+            Client::from_config("test_files/mock_ssh_config_regex", Some("regex_pattern.*"));
         let correct_nodes: Vec<String> = vec![
             "regex_pattern".into(),
             "regex_patterndef".into(),
@@ -219,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_client_info() {
-        let client = Client::from_config("test_files/mock_ssh_config", Some(".*".into()));
+        let client = Client::from_config("test_files/mock_ssh_config", Some(".*"));
         let correct_nodes: Vec<(String, Node)> = vec![
             (String::from("abc"), Node::new("abc".into())),
             (String::from("def"), Node::new("def".into())),

@@ -4,14 +4,12 @@ pub mod constants {
 
 mod cli;
 mod client;
-//mod formatter;
+mod formatter;
 mod utility;
 
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 
-// This lint option should be allowed because it is the current way to print results to stdout.
-#[allow(clippy::print_stdout)]
 pub async fn run() {
     let mut _cli = cli::App::parse();
 
@@ -20,18 +18,30 @@ pub async fn run() {
         None => None,
     };
 
+    let mut result: String = String::new();
+    let mut parse: bool = false;
+
     match _cli.command {
         cli::Command::Completion { shell } => {
             generate_completion(shell);
         }
         _ => {
+            parse = true;
             for word in utility::run_command(_cli.command, _cli.sudo, regex).await {
                 match word {
-                    Ok(s) => println!("{}", s),
-                    Err(e) => println!("{}", e),
+                    Ok(s) => result.push_str(&s),
+                    Err(e) => {
+                        println!("{}", e);
+                    }
                 }
             }
         }
+    }
+
+    let mut parser = formatter::Parser::from_command_results(result);
+
+    if parse {
+        parser.print();
     }
 }
 
