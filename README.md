@@ -17,11 +17,12 @@ to support all docker commands on remote nodes.
 
 | Command  | Notes                    |
 |----------|--------------------------|
-| PS       |                          |
-| STOP     |                          |
-| LOGS     |                          |
 | EXEC     | --tty is not implemented |
+| IMAGES   |                          |
+| LOGS     |                          |
+| PS       |                          |
 | RESTART  |                          |
+| STOP     |                          |
 
 
 # Flags
