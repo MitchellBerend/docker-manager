@@ -193,6 +193,35 @@ pub async fn run_command(
                 .buffer_unordered(constants::CONCURRENT_REQUESTS);
             bodies.collect::<Vec<Result<String, CommandError>>>().await
         }
+        Command::Restart { time, container_id } => {
+            let node_containers: Vec<(String, String)> =
+                find_container(client, &container_id, sudo).await;
+
+            match node_containers.len() {
+                0 => {
+                    vec![Err(CommandError::NoNodesFound(container_id))]
+                }
+                1 => {
+                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
+                    let node_tuple = node_containers.get(0).unwrap().to_owned();
+                    let node = Node::new(node_tuple.1);
+                    match node
+                        .run_command(Command::Restart { time, container_id }, sudo)
+                        .await
+                    {
+                        Ok(s) => vec![Ok(s)],
+                        Err(e) => vec![Err(CommandError::NodeError(e))],
+                    }
+                }
+                _ => {
+                    let nodes = node_containers
+                        .iter()
+                        .map(|(_, result)| result.clone())
+                        .collect::<Vec<String>>();
+                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                }
+            }
+        }
         Command::Stop { container_id } => {
             let node_containers: Vec<(String, String)> =
                 find_container(client, &container_id, sudo).await;

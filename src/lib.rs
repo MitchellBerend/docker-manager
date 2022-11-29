@@ -26,7 +26,9 @@ pub async fn run() {
             generate_completion(shell);
         }
         _ => {
-            parse = true;
+            if let cli::Command::Ps { .. } = &_cli.command {
+                parse = true;
+            }
             for word in utility::run_command(_cli.command, _cli.sudo, regex).await {
                 match word {
                     Ok(s) => result.push_str(&s),
@@ -38,10 +40,14 @@ pub async fn run() {
         }
     }
 
-    let mut parser = formatter::Parser::from_command_results(result);
-
     if parse {
-        parser.print();
+        let mut parser = formatter::Parser::from_command_results(result);
+
+        if parse {
+            parser.print();
+        }
+    } else {
+        println!("{}", result);
     }
 }
 
