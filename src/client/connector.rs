@@ -156,6 +156,12 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
+            Command::Restart { time, container_id } => {
+                match command::run_restart(&self.address, session, sudo, time, &container_id).await {
+                    Ok(result) => Ok(result),
+                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
+            }
             Command::Stop { container_id } => {
                 match command::run_stop(&self.address, session, sudo, &container_id).await {
                     Ok(result) => Ok(result),
