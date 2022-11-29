@@ -205,7 +205,10 @@ pub async fn run_command(
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
-                    match node.run_command(Command::Restart { time, container_id }, sudo).await {
+                    match node
+                        .run_command(Command::Restart { time, container_id }, sudo)
+                        .await
+                    {
                         Ok(s) => vec![Ok(s)],
                         Err(e) => vec![Err(CommandError::NodeError(e))],
                     }
