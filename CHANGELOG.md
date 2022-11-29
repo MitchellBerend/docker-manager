@@ -1,6 +1,7 @@
 ## Added
 
 [[#33](https://github.com/MitchellBerend/docker-manager/pull/33)] Added a formatter for ps command
+[[#26](https://github.com/MitchellBerend/docker-manager/issues/26)] Added the restart command
 
 
 v0.0.5
