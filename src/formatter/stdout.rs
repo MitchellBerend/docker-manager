@@ -1,7 +1,7 @@
 use defaultdict::DefaultHashMap;
 
 const HOSTNAME: &str = "HOSTNAME";
-const OFFSET: usize = 3;
+const OFFSET: usize = 2;
 
 #[derive(Debug)]
 pub struct Parser {
@@ -18,6 +18,8 @@ impl Parser {
         let mut headers: Vec<String> = vec![];
 
         let mut node: Option<String> = None;
+
+        let re = regex::Regex::new(r"\d").unwrap();
 
         // The arms in this if block only execute the same action, they do check different things.
         #[allow(clippy::if_same_then_else)]
@@ -42,8 +44,17 @@ impl Parser {
                 node = Some(String::from(line))
             } else if let Some(node) = &node {
                 let mut placeholder: Vec<String> = vec![];
-                for item in line.split("  ").filter(|item| !item.is_empty()) {
-                    placeholder.push(String::from(item.trim()));
+                for (index, item) in line.split("  ").filter(|item| !item.is_empty()).enumerate() {
+                    if let Some(header) = headers.get(index) {
+                        if header.contains("PORT") && re.is_match(item) {
+                            placeholder.push(String::from(item.trim()));
+                        } else if header.contains("PORT") && !re.is_match(item) {
+                            placeholder.push(String::new());
+                            placeholder.push(String::from(item.trim()));
+                        } else {
+                            placeholder.push(String::from(item.trim()));
+                        }
+                    }
                 }
                 internal.get_mut(node).push(placeholder);
             }
