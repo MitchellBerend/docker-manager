@@ -21,6 +21,7 @@ to support all docker commands on remote nodes.
 | STOP     |                          |
 | LOGS     |                          |
 | EXEC     | --tty is not implemented |
+| RESTART  |                          |
 
 
 # Flags
