@@ -64,10 +64,8 @@ impl Parser {
 
         for host in internal.keys() {
             let lines = internal.get(host);
-            let number = std::cmp::max(
-                host.len() + OFFSET,
-                header_spacing[&String::from(HOSTNAME)],
-            );
+            let number =
+                std::cmp::max(host.len() + OFFSET, header_spacing[&String::from(HOSTNAME)]);
             header_spacing.insert(String::from(HOSTNAME), number);
             for line in lines {
                 for (header_index, item) in line.iter().enumerate() {
