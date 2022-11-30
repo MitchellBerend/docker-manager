@@ -13,7 +13,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn from_command_results(log: String) -> Self {
-        let re = regex::Regex::new(r"\d").unwrap();
+        let re = regex::Regex::new(r"/").unwrap();
 
         let mut internal: DefaultHashMap<String, Vec<Vec<String>>> = DefaultHashMap::new();
         let mut header_spacing: DefaultHashMap<String, usize> = DefaultHashMap::new();
