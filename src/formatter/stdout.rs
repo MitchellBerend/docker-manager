@@ -13,13 +13,12 @@ pub struct Parser {
 
 impl Parser {
     pub fn from_command_results(log: String) -> Self {
+        let re = regex::Regex::new(r"/").unwrap();
+
         let mut internal: DefaultHashMap<String, Vec<Vec<String>>> = DefaultHashMap::new();
         let mut header_spacing: DefaultHashMap<String, usize> = DefaultHashMap::new();
         let mut headers: Vec<String> = vec![];
-
         let mut node: Option<String> = None;
-
-        let re = regex::Regex::new(r"\d").unwrap();
 
         // The arms in this if block only execute the same action, they do check different things.
         #[allow(clippy::if_same_then_else)]
@@ -63,6 +62,22 @@ impl Parser {
         headers.insert(0, HOSTNAME.to_string());
         header_spacing.insert(String::from(HOSTNAME), String::from(HOSTNAME).len());
 
+        for host in internal.keys() {
+            let lines = internal.get(host);
+            let number =
+                std::cmp::max(host.len() + OFFSET, header_spacing[&String::from(HOSTNAME)]);
+            header_spacing.insert(String::from(HOSTNAME), number);
+            for line in lines {
+                for (header_index, item) in line.iter().enumerate() {
+                    if let Some(header) = headers.get(header_index + 1) {
+                        let number =
+                            std::cmp::max(item.len() + OFFSET, *header_spacing.get(header));
+                        header_spacing.insert(header.to_owned(), number);
+                    }
+                }
+            }
+        }
+
         Self {
             headers,
             header_spacing,
@@ -71,25 +86,8 @@ impl Parser {
     }
 
     pub fn print(&mut self) {
-        for host in self.internal.keys() {
-            let lines = self.internal.get(host);
-            let number = std::cmp::max(
-                host.len() + OFFSET,
-                self.header_spacing[&String::from(HOSTNAME)],
-            );
-            self.header_spacing.insert(String::from(HOSTNAME), number);
-            for line in lines {
-                for (header_index, item) in line.iter().enumerate() {
-                    if let Some(header) = self.headers.get(header_index + 1) {
-                        let number =
-                            std::cmp::max(item.len() + OFFSET, *self.header_spacing.get(header));
-                        self.header_spacing.insert(header.to_owned(), number);
-                    }
-                }
-            }
-        }
-
         let mut headers = String::new();
+        let mut body = String::new();
 
         for header in &self.headers {
             let spacing: usize = *self.header_spacing.get(header);
@@ -102,8 +100,6 @@ impl Parser {
             }
             headers.push('\t');
         }
-
-        let mut body = String::new();
 
         for host in self.internal.keys() {
             let lines = self.internal.get(host);

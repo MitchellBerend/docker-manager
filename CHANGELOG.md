@@ -1,3 +1,6 @@
+[[#41]](https://github.com/MitchellBerend/docker-manager/pull/41) Refactor of formatter struct
+
+
 v0.0.6
 ---
 
