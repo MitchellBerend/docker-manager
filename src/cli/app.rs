@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -174,4 +174,28 @@ pub enum Command {
         /// Container name or id
         container_id: String,
     },
+
+    /// Manage Docker
+    System(System),
+}
+
+#[derive(Args, Clone, Debug)]
+pub struct System {
+    #[command(subcommand)]
+    pub command: SystemCommand,
+}
+
+#[derive(Clone, Debug, Subcommand)]
+pub enum SystemCommand {
+    /// Show docker disk usage
+    Df {
+        #[arg(long)]
+        format: Option<String>,
+
+        #[arg(short, long)]
+        verbose: bool,
+    },
+    Events,
+    Info,
+    Prune,
 }
