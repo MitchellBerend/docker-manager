@@ -302,14 +302,59 @@ pub async fn run_system(
                 _command.push("-v");
             }
         }
-        SystemCommand::Events => {
+        SystemCommand::Events {
+            ref filter,
+            ref format,
+            ref since,
+            ref until,
+        } => {
             _command.push("events");
+
+            if let Some(filter) = filter {
+                _command.push("--filter");
+                _command.push(filter);
+            }
+            if let Some(format) = format {
+                _command.push("--format");
+                _command.push(format);
+            }
+            if let Some(since) = since {
+                _command.push("--since");
+                _command.push(since);
+            }
+            if let Some(until) = until {
+                _command.push("--until");
+                _command.push(until);
+            }
         }
-        SystemCommand::Info => {
+        SystemCommand::Info { ref format } => {
             _command.push("info");
+            if let Some(format) = format {
+                _command.push("--format");
+                _command.push(format);
+            }
         }
-        SystemCommand::Prune => {
+        SystemCommand::Prune {
+            all,
+            ref filter,
+            force,
+            volumes,
+        } => {
             _command.push("prune");
+
+            if all {
+                _command.push("--all");
+            }
+            if let Some(filter) = filter {
+                _command.push("--filter");
+                _command.push(filter);
+            }
+            if force {
+                _command.push("--force");
+            }
+            if volumes {
+                _command.push("--volumes");
+            }
         }
     }
 
