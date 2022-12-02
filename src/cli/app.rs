@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -173,5 +173,67 @@ pub enum Command {
     Stop {
         /// Container name or id
         container_id: String,
+    },
+
+    /// Manage Docker
+    System(System),
+}
+
+#[derive(Args, Clone, Debug)]
+pub struct System {
+    #[command(subcommand)]
+    pub command: SystemCommand,
+}
+
+#[derive(Clone, Debug, Subcommand)]
+pub enum SystemCommand {
+    /// Show docker disk usage
+    Df {
+        /// Format the output using the given Go template
+        #[arg(long, value_name = "string")]
+        format: Option<String>,
+
+        #[arg(short, long)]
+        verbose: bool,
+    },
+    /// Get real time events from the server
+    Events {
+        /// Filter output based on conditions provided
+        #[arg(short, long, value_name = "filter")]
+        filter: Option<String>,
+
+        /// Pretty-print images using a Go template
+        #[arg(long, value_name = "string")]
+        format: Option<String>,
+
+        /// Show logs since timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+        #[arg(long, value_name = "string")]
+        since: Option<String>,
+
+        /// Show logs before a timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+        #[arg(long, value_name = "string")]
+        until: Option<String>,
+    },
+    Info {
+        /// Pretty-print images using a Go template
+        #[arg(long, value_name = "string")]
+        format: Option<String>,
+    },
+    Prune {
+        /// Remove all unused images not just dangling ones
+        #[arg(short, long)]
+        all: bool,
+
+        /// Filter output based on conditions provided
+        #[arg(long, value_name = "filter")]
+        filter: Option<String>,
+
+        /// Do not prompt for confirmation
+        #[arg(short, long)]
+        force: bool,
+
+        /// Prune volumes
+        #[arg(long)]
+        volumes: bool,
     },
 }

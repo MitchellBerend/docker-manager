@@ -169,6 +169,12 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
+            Command::System(command) => {
+                match command::run_system(&self.address, session, sudo, command).await {
+                    Ok(result) => Ok(result),
+                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
+            }
         }
     }
 }

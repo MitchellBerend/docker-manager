@@ -248,6 +248,20 @@ pub async fn run_command(
                 }
             }
         }
+        Command::System(command) => {
+            let bodies = stream::iter(client.nodes_info())
+                .map(|(_, node)| async {
+                    match node
+                        .run_command(Command::System(command.clone()), sudo)
+                        .await
+                    {
+                        Ok(result) => Ok(result),
+                        Err(e) => Err(CommandError::NodeError(e)),
+                    }
+                })
+                .buffer_unordered(constants::CONCURRENT_REQUESTS);
+            bodies.collect::<Vec<Result<String, CommandError>>>().await
+        }
     }
 }
 

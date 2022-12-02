@@ -1,10 +1,12 @@
 # Quick start
 
 1. Download the latests [release](https://github.com/MitchellBerend/docker-manager/releases).
-2. Ensure the user you log in with has sudo rights.
+2. Check if you need sudo rights to access docker commands
+    If you do you can supply the `-s` [flag](#Flags)
 3. Run `docker-manager completion --help` to set up auto completion for your
 shell
-4. Run `docker-manager ps`
+4. Run `docker-manager ps -a`
+
 
 # Goals
 This project aims to have an easier way to interact with docker containers on
@@ -14,7 +16,6 @@ to support all docker commands on remote nodes.
 
 # Current commands
 
-
 | Command  | Notes                    |
 |----------|--------------------------|
 | EXEC     | --tty is not implemented |
@@ -23,6 +24,7 @@ to support all docker commands on remote nodes.
 | PS       |                          |
 | RESTART  |                          |
 | STOP     |                          |
+| SYSTEM   |                          |
 
 
 # Flags
