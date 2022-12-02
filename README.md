@@ -23,6 +23,7 @@ to support all docker commands on remote nodes.
 | PS       |                          |
 | RESTART  |                          |
 | STOP     |                          |
+| SYSTEM   |                          |
 
 
 # Flags
