@@ -193,6 +193,7 @@ pub enum SystemCommand {
         #[arg(long, value_name = "string")]
         format: Option<String>,
 
+        /// Show detailed information on space usage
         #[arg(short, long)]
         verbose: bool,
     },
@@ -214,11 +215,13 @@ pub enum SystemCommand {
         #[arg(long, value_name = "string")]
         until: Option<String>,
     },
+    /// Display system-wide information
     Info {
         /// Pretty-print images using a Go template
         #[arg(long, value_name = "string")]
         format: Option<String>,
     },
+    /// Remove unused data
     Prune {
         /// Remove all unused images not just dangling ones
         #[arg(short, long)]
