@@ -20,14 +20,18 @@ pub async fn run() {
 
     let mut result: String = String::new();
     let mut parse: bool = false;
+    let mut command: String = String::new();
 
     match _cli.command {
         cli::Command::Completion { shell } => {
             generate_completion(shell);
         }
         _ => {
-            if let cli::Command::Ps { .. } = &_cli.command {
-                parse = true;
+            command = _cli.command.to_string();
+            match &_cli.command {
+                cli::Command::Ps { .. } => parse = true,
+                cli::Command::Images { .. } => parse = true,
+                _ => (),
             }
             for word in utility::run_command(_cli.command, _cli.sudo, regex).await {
                 match word {
@@ -41,9 +45,16 @@ pub async fn run() {
     }
 
     if parse {
-        let mut parser = formatter::Parser::from_command_results(result);
+        let mut parser: Option<formatter::Parser> = None;
 
-        if parse {
+        match command.as_str() {
+            "Ps" => parser = Some(formatter::Parser::from_ps_results(&result)),
+            "Images" => parser = Some(formatter::Parser::from_images_results(&result)),
+
+            _ => (),
+        }
+
+        if let Some(mut parser) = parser {
             parser.print();
         }
     } else {
