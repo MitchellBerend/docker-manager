@@ -1,4 +1,4 @@
-
+[[#45]](https://github.com/MitchellBerend/docker-manager/pull/45) Add formatterfor images command
 
 [[#43](https://github.com/MitchellBerend/docker-manager/issues/43)] Added missing system command and flag descriptions
 

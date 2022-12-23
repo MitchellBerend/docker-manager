@@ -296,7 +296,7 @@ pub async fn run_system(
         } => {
             _command.push("df");
             if let Some(format) = format {
-                _command.push(&format);
+                _command.push(format);
             }
             if verbose {
                 _command.push("-v");

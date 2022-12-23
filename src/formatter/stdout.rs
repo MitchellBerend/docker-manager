@@ -12,7 +12,70 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn from_command_results(log: String) -> Self {
+    pub fn from_images_results(log: &str) -> Self {
+        let mut internal: DefaultHashMap<String, Vec<Vec<String>>> = DefaultHashMap::new();
+        let mut header_spacing: DefaultHashMap<String, usize> = DefaultHashMap::new();
+        let mut headers: Vec<String> = vec![];
+        let mut node: Option<String> = None;
+
+        // headers REPOSITORY  TAG  IMAGE ID  CREATED SIZE
+
+        // The arms in this if block only execute the same action, they do check different things.
+        #[allow(clippy::if_same_then_else)]
+        for line in log.split('\n') {
+            if line.contains("REPOSITORY") {
+                let headers_iter: Vec<String> = line
+                    .split("  ")
+                    .filter(|item| !item.is_empty())
+                    .map(|item| String::from(item.trim()))
+                    .collect();
+                if headers.len() < headers_iter.len() {
+                    headers = headers_iter;
+                }
+                continue;
+            } else if line.contains("not found") {
+                continue;
+            } else if line.is_empty() {
+                continue;
+            } else if line.contains("Error") {
+                continue;
+            } else if !line.contains(' ') {
+                node = Some(String::from(line))
+            } else if let Some(node) = &node {
+                let mut placeholder: Vec<String> = vec![];
+                for item in line.split("  ").filter(|item| !item.is_empty()) {
+                    placeholder.push(String::from(item.trim()));
+                }
+                internal.get_mut(node).push(placeholder);
+            }
+        }
+
+        headers.insert(0, HOSTNAME.to_string());
+        header_spacing.insert(String::from(HOSTNAME), String::from(HOSTNAME).len());
+
+        for host in internal.keys() {
+            let lines = internal.get(host);
+            let number =
+                std::cmp::max(host.len() + OFFSET, header_spacing[&String::from(HOSTNAME)]);
+            header_spacing.insert(String::from(HOSTNAME), number);
+            for line in lines {
+                for (header_index, item) in line.iter().enumerate() {
+                    if let Some(header) = headers.get(header_index + 1) {
+                        let number =
+                            std::cmp::max(item.len() + OFFSET, *header_spacing.get(header));
+                        header_spacing.insert(header.to_owned(), number);
+                    }
+                }
+            }
+        }
+
+        Self {
+            headers,
+            header_spacing,
+            internal,
+        }
+    }
+    pub fn from_ps_results(log: &str) -> Self {
         let re = regex::Regex::new(r"/").unwrap();
 
         let mut internal: DefaultHashMap<String, Vec<Vec<String>>> = DefaultHashMap::new();

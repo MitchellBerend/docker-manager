@@ -240,3 +240,14 @@ pub enum SystemCommand {
         volumes: bool,
     },
 }
+
+impl std::fmt::Display for Command {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        match self {
+            Self::Completion { .. } => write!(f, "Completion",),
+            Self::Ps { .. } => write!(f, "Ps",),
+            Self::Images { .. } => write!(f, "Images",),
+            _ => write!(f, "Not implemented",),
+        }
+    }
+}
