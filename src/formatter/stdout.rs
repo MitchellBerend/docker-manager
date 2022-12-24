@@ -18,8 +18,6 @@ impl Parser {
         let mut headers: Vec<String> = vec![];
         let mut node: Option<String> = None;
 
-        // headers REPOSITORY  TAG  IMAGE ID  CREATED SIZE
-
         // The arms in this if block only execute the same action, they do check different things.
         #[allow(clippy::if_same_then_else)]
         for line in log.split('\n') {
@@ -53,21 +51,7 @@ impl Parser {
         headers.insert(0, HOSTNAME.to_string());
         header_spacing.insert(String::from(HOSTNAME), String::from(HOSTNAME).len());
 
-        for host in internal.keys() {
-            let lines = internal.get(host);
-            let number =
-                std::cmp::max(host.len() + OFFSET, header_spacing[&String::from(HOSTNAME)]);
-            header_spacing.insert(String::from(HOSTNAME), number);
-            for line in lines {
-                for (header_index, item) in line.iter().enumerate() {
-                    if let Some(header) = headers.get(header_index + 1) {
-                        let number =
-                            std::cmp::max(item.len() + OFFSET, *header_spacing.get(header));
-                        header_spacing.insert(header.to_owned(), number);
-                    }
-                }
-            }
-        }
+        create_spacing(&headers, &mut header_spacing, &mut internal);
 
         Self {
             headers,
@@ -75,6 +59,7 @@ impl Parser {
             internal,
         }
     }
+
     pub fn from_ps_results(log: &str) -> Self {
         let re = regex::Regex::new(r"/").unwrap();
 
@@ -125,21 +110,7 @@ impl Parser {
         headers.insert(0, HOSTNAME.to_string());
         header_spacing.insert(String::from(HOSTNAME), String::from(HOSTNAME).len());
 
-        for host in internal.keys() {
-            let lines = internal.get(host);
-            let number =
-                std::cmp::max(host.len() + OFFSET, header_spacing[&String::from(HOSTNAME)]);
-            header_spacing.insert(String::from(HOSTNAME), number);
-            for line in lines {
-                for (header_index, item) in line.iter().enumerate() {
-                    if let Some(header) = headers.get(header_index + 1) {
-                        let number =
-                            std::cmp::max(item.len() + OFFSET, *header_spacing.get(header));
-                        header_spacing.insert(header.to_owned(), number);
-                    }
-                }
-            }
-        }
+        create_spacing(&headers, &mut header_spacing, &mut internal);
 
         Self {
             headers,
@@ -196,5 +167,25 @@ impl Parser {
         }
 
         println!("{}\n{}\n", headers, body);
+    }
+}
+
+fn create_spacing(
+    headers: &[String],
+    header_spacing: &mut DefaultHashMap<String, usize>,
+    internal: &mut DefaultHashMap<String, Vec<Vec<String>>>,
+) {
+    for host in internal.keys() {
+        let lines = internal.get(host);
+        let number = std::cmp::max(host.len() + OFFSET, header_spacing[&String::from(HOSTNAME)]);
+        header_spacing.insert(String::from(HOSTNAME), number);
+        for line in lines {
+            for (header_index, item) in line.iter().enumerate() {
+                if let Some(header) = headers.get(header_index + 1) {
+                    let number = std::cmp::max(item.len() + OFFSET, *header_spacing.get(header));
+                    header_spacing.insert(header.to_owned(), number);
+                }
+            }
+        }
     }
 }
