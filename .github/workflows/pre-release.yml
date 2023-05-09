@@ -11,9 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      - uses: dtolnay/rust-toolchain@master
       - name: Build binary
         run: cargo build --release
       - uses: marvinpinto/action-automatic-releases@v1.2.1
