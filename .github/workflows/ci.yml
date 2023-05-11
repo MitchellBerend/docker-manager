@@ -20,9 +20,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/cache@v3
-      name: Cache cargo
+    - name: Check out code
+      uses: actions/checkout@v3
+    - name: Setup cache
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cargo/bin/
@@ -63,5 +64,5 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Cargo clippy
-      - run: |
+        run: |
           cargo clippy --all-features
