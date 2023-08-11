@@ -247,6 +247,41 @@ pub async fn run_restart(
 
     Ok(rv)
 }
+
+pub async fn run_start(
+    hostname: &str,
+    session: openssh::Session,
+    sudo: bool,
+    container_id: &str,
+) -> Result<String, openssh::Error> {
+    let command = vec!["start", container_id];
+
+    let _output = match sudo {
+        true => {
+            session
+                .command("sudo")
+                .arg("docker")
+                .args(command)
+                .output()
+                .await
+        }
+        false => session.command("docker").args(command).output().await,
+    };
+
+    let output = match _output {
+        Ok(output) => output,
+        Err(e) => return Err(e),
+    };
+
+    let mut rv: String = format!("{}\n", hostname);
+    match output.status.code().unwrap() {
+        0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
+        _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
+    };
+
+    Ok(rv)
+}
+
 pub async fn run_stop(
     hostname: &str,
     session: openssh::Session,

@@ -173,6 +173,12 @@ pub enum Command {
         container_id: String,
     },
 
+    /// Starts a given container unless 2 or more containers are found on remote nodes
+    Start {
+        /// Container name or id
+        container_id: String,
+    },
+
     /// Stops a given container unless 2 or more containers are found on remote nodes
     Stop {
         /// Container name or id
