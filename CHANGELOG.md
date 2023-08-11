@@ -1,3 +1,8 @@
+v0.0.7
+---
+
+## Added
+
 [[#54]](https://github.com/MitchellBerend/docker-manager/pull/54) Implement rm command and most of it's flags
 
 [[#53]](https://github.com/MitchellBerend/docker-manager/pull/53) Implement start command
