@@ -227,7 +227,11 @@ pub async fn run_command(
                 }
             }
         }
-        Command::Rm { container_id, force, volumes } => {
+        Command::Rm {
+            container_id,
+            force,
+            volumes,
+        } => {
             let node_containers: Vec<(String, String)> =
                 find_container(client, &container_id, sudo, true, identity_file).await;
 
@@ -240,7 +244,15 @@ pub async fn run_command(
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
                     match node
-                        .run_command(Command::Rm { container_id, force, volumes }, sudo, identity_file)
+                        .run_command(
+                            Command::Rm {
+                                container_id,
+                                force,
+                                volumes,
+                            },
+                            sudo,
+                            identity_file,
+                        )
                         .await
                     {
                         Ok(s) => vec![Ok(s)],

@@ -1,4 +1,4 @@
-use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, RmFlags, PsFlags};
+use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags, RmFlags};
 use crate::cli::{System, SystemCommand};
 
 pub async fn run_exec(
@@ -456,4 +456,4 @@ pub async fn run_system(
     };
 
     Ok(rv)
-} 
+}

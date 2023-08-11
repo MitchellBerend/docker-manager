@@ -346,25 +346,18 @@ pub struct RmFlags {
 }
 
 impl RmFlags {
-    pub fn new(
-        force: bool,
-        volume: bool,
-    ) -> Self {
-
-
-        Self {
-            force, volume
-        }
+    pub fn new(force: bool, volume: bool) -> Self {
+        Self { force, volume }
     }
 
     pub fn flags(&self) -> Vec<&'static str> {
         let mut v: Vec<&str> = vec![];
 
-        if self.force{
+        if self.force {
             v.push("-f")
         }
 
-        if self.volume{
+        if self.volume {
             v.push("-v")
         }
 
