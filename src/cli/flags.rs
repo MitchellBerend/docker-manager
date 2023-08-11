@@ -339,3 +339,28 @@ impl<'a> PsFlags<'a> {
         v
     }
 }
+
+pub struct RmFlags {
+    pub force: bool,
+    pub volume: bool,
+}
+
+impl RmFlags {
+    pub fn new(force: bool, volume: bool) -> Self {
+        Self { force, volume }
+    }
+
+    pub fn flags(&self) -> Vec<&'static str> {
+        let mut v: Vec<&str> = vec![];
+
+        if self.force {
+            v.push("-f")
+        }
+
+        if self.volume {
+            v.push("-v")
+        }
+
+        v
+    }
+}
