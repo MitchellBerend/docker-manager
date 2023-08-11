@@ -18,6 +18,11 @@ pub async fn run() {
         None => None,
     };
 
+    let identity_file: Option<&str> = match &_cli.identity_file {
+        Some(id) => Some(id),
+        None => None,
+    };
+
     let mut result: String = String::new();
     let mut parse: bool = false;
     let mut command: String = String::new();
@@ -33,7 +38,7 @@ pub async fn run() {
                 cli::Command::Images { .. } => parse = true,
                 _ => (),
             }
-            for word in utility::run_command(_cli.command, _cli.sudo, regex).await {
+            for word in utility::run_command(_cli.command, _cli.sudo, regex, identity_file).await {
                 match word {
                     Ok(s) => result.push_str(&s),
                     Err(e) => {

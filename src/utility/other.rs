@@ -11,6 +11,7 @@ pub async fn find_container(
     client: Client,
     container_id: &str,
     sudo: bool,
+    identity_file: Option<&str>,
 ) -> Vec<(String, String)> {
     let bodies = stream::iter(client.nodes_info())
         .map(|(hostname, node)| async move {
@@ -27,6 +28,7 @@ pub async fn find_container(
                         size: false,
                     },
                     sudo,
+                    identity_file,
                 )
                 .await
             {

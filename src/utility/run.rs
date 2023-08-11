@@ -10,6 +10,7 @@ pub async fn run_command(
     command: Command,
     sudo: bool,
     regex: Option<&str>,
+    identity_file: Option<&str>,
 ) -> Vec<Result<String, CommandError>> {
     let config_path = format!(
         "{}/.ssh/config",
@@ -35,7 +36,7 @@ pub async fn run_command(
             workdir,
         } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo).await;
+                find_container(client, &container_id, sudo, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -60,6 +61,7 @@ pub async fn run_command(
                                 workdir,
                             },
                             sudo,
+                            identity_file,
                         )
                         .await
                     {
@@ -99,6 +101,7 @@ pub async fn run_command(
                                 quiet,
                             },
                             sudo,
+                            identity_file,
                         )
                         .await
                     {
@@ -119,7 +122,7 @@ pub async fn run_command(
             until,
         } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo).await;
+                find_container(client, &container_id, sudo, identity_file).await;
             match node_containers.len() {
                 0 => {
                     vec![Err(CommandError::NoNodesFound(container_id))]
@@ -140,6 +143,7 @@ pub async fn run_command(
                                 until,
                             },
                             sudo,
+                            identity_file,
                         )
                         .await
                     {
@@ -183,6 +187,7 @@ pub async fn run_command(
                                 size,
                             },
                             sudo,
+                            identity_file,
                         )
                         .await
                     {
@@ -195,7 +200,7 @@ pub async fn run_command(
         }
         Command::Restart { time, container_id } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo).await;
+                find_container(client, &container_id, sudo, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -206,7 +211,7 @@ pub async fn run_command(
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
                     match node
-                        .run_command(Command::Restart { time, container_id }, sudo)
+                        .run_command(Command::Restart { time, container_id }, sudo, identity_file)
                         .await
                     {
                         Ok(s) => vec![Ok(s)],
@@ -224,7 +229,7 @@ pub async fn run_command(
         }
         Command::Stop { container_id } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo).await;
+                find_container(client, &container_id, sudo, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -234,7 +239,7 @@ pub async fn run_command(
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.1);
-                    match node.run_command(Command::Stop { container_id }, sudo).await {
+                    match node.run_command(Command::Stop { container_id }, sudo, identity_file).await {
                         Ok(s) => vec![Ok(s)],
                         Err(e) => vec![Err(CommandError::NodeError(e))],
                     }
@@ -252,7 +257,7 @@ pub async fn run_command(
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
                     match node
-                        .run_command(Command::System(command.clone()), sudo)
+                        .run_command(Command::System(command.clone()), sudo, identity_file)
                         .await
                     {
                         Ok(result) => Ok(result),
