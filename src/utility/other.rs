@@ -11,6 +11,7 @@ pub async fn find_container(
     client: Client,
     container_id: &str,
     sudo: bool,
+    all: bool,
     identity_file: Option<&str>,
 ) -> Vec<(String, String)> {
     let bodies = stream::iter(client.nodes_info())
@@ -18,7 +19,7 @@ pub async fn find_container(
             match node
                 .run_command(
                     Command::Ps {
-                        all: false,
+                        all,
                         filter: None,
                         format: None,
                         last: false,

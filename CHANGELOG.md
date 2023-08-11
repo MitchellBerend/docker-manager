@@ -1,6 +1,8 @@
+[[#53]](https://github.com/MitchellBerend/docker-manager/pull/53) Implement start command
+
 [[#52]](https://github.com/MitchellBerend/docker-manager/pull/52) Add a identity file flag option
 
-[[#45]](https://github.com/MitchellBerend/docker-manager/pull/45) Add formatterfor images command
+[[#45]](https://github.com/MitchellBerend/docker-manager/pull/45) Add formatter for images command
 
 [[#43](https://github.com/MitchellBerend/docker-manager/issues/43)] Added missing system command and flag descriptions
 
