@@ -173,6 +173,19 @@ pub enum Command {
         container_id: String,
     },
 
+    ///Remove one or more containers
+    Rm {
+        container_id: String,
+
+        /// Force the removal of a running container (uses SIGKILL)
+        #[arg(short, long)]
+        force: bool,
+
+        /// Remove anonymous volumes associated with the container
+        #[arg(short, long)]
+        volumes: bool,
+    },
+
     /// Starts a given container unless 2 or more containers are found on remote nodes
     Start {
         /// Container name or id

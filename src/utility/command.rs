@@ -1,4 +1,4 @@
-use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags};
+use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, RmFlags, PsFlags};
 use crate::cli::{System, SystemCommand};
 
 pub async fn run_exec(
@@ -248,6 +248,45 @@ pub async fn run_restart(
     Ok(rv)
 }
 
+pub async fn run_rm(
+    hostname: &str,
+    session: openssh::Session,
+    sudo: bool,
+    container_id: &str,
+    flags: RmFlags,
+) -> Result<String, openssh::Error> {
+    let mut command = vec!["rm", container_id];
+
+    for flag in flags.flags() {
+        command.push(flag)
+    }
+
+    let _output = match sudo {
+        true => {
+            session
+                .command("sudo")
+                .arg("docker")
+                .args(command)
+                .output()
+                .await
+        }
+        false => session.command("docker").args(command).output().await,
+    };
+
+    let output = match _output {
+        Ok(output) => output,
+        Err(e) => return Err(e),
+    };
+
+    let mut rv: String = format!("{}\n", hostname);
+    match output.status.code().unwrap() {
+        0 => rv.push_str(std::str::from_utf8(&output.stdout).unwrap_or("")),
+        _ => rv.push_str(std::str::from_utf8(&output.stderr).unwrap_or("")),
+    };
+
+    Ok(rv)
+}
+
 pub async fn run_start(
     hostname: &str,
     session: openssh::Session,
@@ -417,4 +456,4 @@ pub async fn run_system(
     };
 
     Ok(rv)
-}
+} 

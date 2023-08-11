@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags};
+use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, RmFlags, PsFlags};
 use crate::cli::Command;
 use crate::utility::command;
 
@@ -167,6 +167,13 @@ impl Node {
             Command::Restart { time, container_id } => {
                 match command::run_restart(&self.address, session, sudo, time, &container_id).await
                 {
+                    Ok(result) => Ok(result),
+                    Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
+                }
+            }
+            Command::Rm { container_id, force, volumes } => {
+                let flags = RmFlags::new(force, volumes);
+                match command::run_rm(&self.address, session, sudo, &container_id, flags).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
