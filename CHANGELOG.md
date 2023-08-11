@@ -1,3 +1,5 @@
+[[#54]](https://github.com/MitchellBerend/docker-manager/pull/54) Implement rm command and most of it's flags
+
 [[#53]](https://github.com/MitchellBerend/docker-manager/pull/53) Implement start command
 
 [[#52]](https://github.com/MitchellBerend/docker-manager/pull/52) Add a identity file flag option
