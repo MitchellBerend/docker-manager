@@ -11,6 +11,10 @@ pub struct App {
     #[arg(short, long, value_name = "regex")]
     pub regex: Option<String>,
 
+    /// Identity file that will be used to identify this machine over ssh
+    #[arg(short, long, value_name = "identity-file")]
+    pub identity_file: Option<String>,
+
     /// This command will be ran on the remote nodes
     #[command(subcommand)]
     pub command: Command,

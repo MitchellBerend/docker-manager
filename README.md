@@ -34,3 +34,5 @@ how the remote node and it's user is set up.
 
 `-r`/`--regex` Lets the user supply a regex pattern that filters the nodes after
 they are read in from `~/.ssh/config`.
+
+`-i`/`--identity-file` Passes an identity file to the underlying ssh connection.
