@@ -36,7 +36,7 @@ pub async fn run_command(
             workdir,
         } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, identity_file).await;
+                find_container(client, &container_id, sudo, false, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -122,7 +122,7 @@ pub async fn run_command(
             until,
         } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, identity_file).await;
+                find_container(client, &container_id, sudo, false, identity_file).await;
             match node_containers.len() {
                 0 => {
                     vec![Err(CommandError::NoNodesFound(container_id))]
@@ -200,7 +200,7 @@ pub async fn run_command(
         }
         Command::Restart { time, container_id } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, identity_file).await;
+                find_container(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -229,7 +229,7 @@ pub async fn run_command(
         }
         Command::Start { container_id } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, identity_file).await;
+                find_container(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -258,7 +258,7 @@ pub async fn run_command(
         }
         Command::Stop { container_id } => {
             let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, identity_file).await;
+                find_container(client, &container_id, sudo, false, identity_file).await;
 
             match node_containers.len() {
                 0 => {
