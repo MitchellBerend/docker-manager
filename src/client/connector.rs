@@ -63,7 +63,12 @@ impl Node {
         Self { address }
     }
 
-    pub async fn run_command(&self, command: Command, sudo: bool, identity_file: Option<&str>) -> Result<String, NodeError> {
+    pub async fn run_command(
+        &self,
+        command: Command,
+        sudo: bool,
+        identity_file: Option<&str>,
+    ) -> Result<String, NodeError> {
         let mut builder = openssh::SessionBuilder::default();
         builder.connect_timeout(std::time::Duration::new(1, 0));
 
@@ -71,8 +76,7 @@ impl Node {
             builder.keyfile(id_file);
         };
 
-        let session = match builder.connect_mux(&self.address).await
-        {
+        let session = match builder.connect_mux(&self.address).await {
             Ok(session) => session,
             Err(e) => return Err(NodeError::SessionError(self.address.clone(), e)),
         };
