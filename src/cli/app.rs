@@ -175,6 +175,7 @@ pub enum Command {
 
     ///Remove one or more containers
     Rm {
+        /// Container name or id
         container_id: String,
 
         /// Force the removal of a running container (uses SIGKILL)
@@ -188,6 +189,10 @@ pub enum Command {
 
     /// Starts a given container unless 2 or more containers are found on remote nodes
     Start {
+        /// Attach STDOUT/STDERR and forward signals
+        #[arg(short, long)]
+        attach: bool,
+
         /// Container name or id
         container_id: String,
     },
