@@ -182,8 +182,12 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Start { container_id, attach } => {
-                match command::run_start(&self.address, session, sudo, &container_id, attach).await {
+            Command::Start {
+                container_id,
+                attach,
+            } => {
+                match command::run_start(&self.address, session, sudo, &container_id, attach).await
+                {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
