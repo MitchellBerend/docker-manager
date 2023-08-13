@@ -292,8 +292,13 @@ pub async fn run_start(
     session: openssh::Session,
     sudo: bool,
     container_id: &str,
+    attatch: bool,
 ) -> Result<String, openssh::Error> {
-    let command = vec!["start", container_id];
+    let mut command = vec!["start", container_id];
+
+    if attatch {
+        command.push("-a");
+    };
 
     let _output = match sudo {
         true => {

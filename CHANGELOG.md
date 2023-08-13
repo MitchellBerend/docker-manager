@@ -1,3 +1,6 @@
+[[#56]](https://github.com/MitchellBerend/docker-manager/pull/56) Added the attach flag to the start command
+
+
 v0.0.7
 ---
 
