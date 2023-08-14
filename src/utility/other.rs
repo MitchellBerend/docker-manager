@@ -159,7 +159,7 @@ mod test {
 
         let new = original
             .into_iter()
-            .filter_map(|(hostname, result, container)| {
+            .filter_map(|(hostname, result, _)| {
                 node_filter_map((&hostname, &result), &container_id)
             })
             .collect::<Vec<(String, String, String)>>();

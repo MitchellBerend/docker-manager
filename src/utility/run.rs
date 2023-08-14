@@ -429,7 +429,7 @@ mod test {
         let error = CommandError::MutlipleNodesFound(vec!["abc".into(), "def".into()]);
 
         let correct_string: String =
-            "Multiple nodes found with matching criteria:\n[\n    \"abc\",\n    \"def\",\n]".into();
+            "Multiple nodes found with matching criteria:\nabc\ndef".into();
 
         assert_eq!(correct_string, format!("{}", error));
     }
