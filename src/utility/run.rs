@@ -2,18 +2,18 @@ use futures::{stream, StreamExt};
 
 use crate::constants;
 
-use crate::cli::Command;
+use crate::cli::InternalCommand;
 use crate::client::{Client, Node, NodeError};
 use crate::utility::find_containers;
 
 use super::other::Container;
 
-pub async fn run_command(
-    command: Command,
+pub async fn run_command<'a>(
+    command: InternalCommand<'a>,
     sudo: bool,
     regex: Option<&str>,
     identity_file: Option<&str>,
-) -> Vec<Result<String, CommandError>> {
+) -> Vec<Result<String, CommandError<'a>>> {
     let config_path = format!(
         "{}/.ssh/config",
         std::env::var("HOME").unwrap_or_else(|_| "/home/root".into())
@@ -21,11 +21,7 @@ pub async fn run_command(
     let client = Client::from_config(config_path, regex);
 
     match command {
-        Command::Completion { shell: _ } => {
-            // This command should not lead to any activity
-            unreachable!()
-        }
-        Command::Exec {
+        InternalCommand::Exec {
             container_id,
             command,
             detach,
@@ -38,7 +34,7 @@ pub async fn run_command(
             workdir,
         } => {
             let node_containers: Vec<Container> =
-                find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
+                find_containers(client, &[container_id], sudo, false, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -50,7 +46,7 @@ pub async fn run_command(
                     let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
-                            Command::Exec {
+                            InternalCommand::Exec {
                                 container_id,
                                 command,
                                 detach,
@@ -80,7 +76,7 @@ pub async fn run_command(
                 }
             }
         }
-        Command::Images {
+        InternalCommand::Images {
             all,
             digest,
             filter,
@@ -90,15 +86,17 @@ pub async fn run_command(
         } => {
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
-                    let _filter: Option<String> = filter.as_ref().map(String::from);
-                    let _format: Option<String> = format.as_ref().map(String::from);
+                    // let _filter: Option<String> = filter.map(String::from);
+                    // let _format: Option<String> = format.map(String::from);
                     match node
                         .run_command(
-                            Command::Images {
+                            InternalCommand::Images {
                                 all,
                                 digest,
-                                filter: _filter,
-                                format: _format,
+                                // filter: _filter,
+                                // format: _format,
+                                filter,
+                                format,
                                 no_trunc,
                                 quiet,
                             },
@@ -114,7 +112,7 @@ pub async fn run_command(
                 .buffer_unordered(constants::CONCURRENT_REQUESTS);
             bodies.collect::<Vec<Result<String, CommandError>>>().await
         }
-        Command::Logs {
+        InternalCommand::Logs {
             container_id,
             details,
             follow,
@@ -124,7 +122,7 @@ pub async fn run_command(
             until,
         } => {
             let node_containers: Vec<Container> =
-                find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
+                find_containers(client, &[container_id], sudo, false, identity_file).await;
             match node_containers.len() {
                 0 => {
                     vec![Err(CommandError::NoNodesFound(container_id))]
@@ -135,7 +133,7 @@ pub async fn run_command(
                     let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
-                            Command::Logs {
+                            InternalCommand::Logs {
                                 container_id,
                                 details,
                                 follow,
@@ -162,7 +160,7 @@ pub async fn run_command(
                 }
             }
         }
-        Command::Ps {
+        InternalCommand::Ps {
             all,
             filter,
             format,
@@ -174,14 +172,16 @@ pub async fn run_command(
         } => {
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
-                    let _filter: Option<String> = filter.as_ref().map(String::from);
-                    let _format: Option<String> = format.as_ref().map(String::from);
+                    // let _filter: Option<String> = filter.map(String::from);
+                    // let _format: Option<String> = format.map(String::from);
                     match node
                         .run_command(
-                            Command::Ps {
+                            InternalCommand::Ps {
                                 all,
-                                filter: _filter,
-                                format: _format,
+                                // filter: _filter,
+                                // format: _format,
+                                filter,
+                                format,
                                 last,
                                 latests,
                                 no_trunc,
@@ -200,7 +200,7 @@ pub async fn run_command(
                 .buffer_unordered(constants::CONCURRENT_REQUESTS);
             bodies.collect::<Vec<Result<String, CommandError>>>().await
         }
-        Command::Restart { time, container_id } => {
+        InternalCommand::Restart { time, container_id } => {
             let node_containers: Vec<Container> =
                 find_containers(client, &container_id, sudo, true, identity_file).await;
 
@@ -213,7 +213,11 @@ pub async fn run_command(
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.hostname().to_string());
                     match node
-                        .run_command(Command::Restart { time, container_id }, sudo, identity_file)
+                        .run_command(
+                            InternalCommand::Restart { time, container_id },
+                            sudo,
+                            identity_file,
+                        )
                         .await
                     {
                         Ok(s) => vec![Ok(s)],
@@ -228,9 +232,9 @@ pub async fn run_command(
                                 let node = Node::new(container.node().to_string());
                                 match node
                                     .run_command(
-                                        Command::Restart {
+                                        InternalCommand::Restart {
                                             time: async_time,
-                                            container_id: vec![container.id().to_string()],
+                                            container_id: vec![container.id()],
                                         },
                                         sudo,
                                         identity_file,
@@ -260,7 +264,7 @@ pub async fn run_command(
                 }
             }
         }
-        Command::Rm {
+        InternalCommand::Rm {
             container_id,
             force,
             volumes,
@@ -278,7 +282,7 @@ pub async fn run_command(
                     let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
-                            Command::Rm {
+                            InternalCommand::Rm {
                                 container_id,
                                 force,
                                 volumes,
@@ -298,8 +302,8 @@ pub async fn run_command(
                             let node = Node::new(container.node().to_string());
                             match node
                                 .run_command(
-                                    Command::Rm {
-                                        container_id: vec![container.id().to_string()],
+                                    InternalCommand::Rm {
+                                        container_id: vec![container.id()],
                                         force,
                                         volumes,
                                     },
@@ -330,7 +334,7 @@ pub async fn run_command(
                 }
             }
         }
-        Command::Start {
+        InternalCommand::Start {
             container_id,
             attach,
         } => {
@@ -347,7 +351,7 @@ pub async fn run_command(
                     let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
-                            Command::Start {
+                            InternalCommand::Start {
                                 container_id,
                                 attach,
                             },
@@ -369,7 +373,7 @@ pub async fn run_command(
                 }
             }
         }
-        Command::Stop { container_id } => {
+        InternalCommand::Stop { container_id } => {
             let node_containers: Vec<Container> =
                 find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
 
@@ -382,7 +386,7 @@ pub async fn run_command(
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
                     let node = Node::new(node_tuple.hostname().to_string());
                     match node
-                        .run_command(Command::Stop { container_id }, sudo, identity_file)
+                        .run_command(InternalCommand::Stop { container_id }, sudo, identity_file)
                         .await
                     {
                         Ok(s) => vec![Ok(s)],
@@ -398,11 +402,15 @@ pub async fn run_command(
                 }
             }
         }
-        Command::System(command) => {
+        InternalCommand::System(command) => {
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
                     match node
-                        .run_command(Command::System(command.clone()), sudo, identity_file)
+                        .run_command(
+                            InternalCommand::System(command.clone()),
+                            sudo,
+                            identity_file,
+                        )
                         .await
                     {
                         Ok(result) => Ok(result),
@@ -415,20 +423,20 @@ pub async fn run_command(
     }
 }
 
-pub enum CommandError {
-    NoNodesFound(String),
-    NoMultipleNodesFound(Vec<String>),
+pub enum CommandError<'a> {
+    NoNodesFound(&'a str),
+    NoMultipleNodesFound(Vec<&'a str>),
     MutlipleNodesFound(Vec<String>),
     NodeError(NodeError),
 }
 
-impl From<NodeError> for CommandError {
+impl<'a> From<NodeError> for CommandError<'a> {
     fn from(node_error: NodeError) -> Self {
         Self::NodeError(node_error)
     }
 }
 
-impl std::fmt::Display for CommandError {
+impl<'a> std::fmt::Display for CommandError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
             Self::NoNodesFound(container_id) => write!(

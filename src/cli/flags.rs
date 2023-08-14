@@ -11,10 +11,10 @@ impl<'a> LogsFlags<'a> {
     pub fn new(
         details: bool,
         follow: bool,
-        since: &'a Option<String>,
-        tail: &'a Option<String>,
+        since: &'a Option<&'a str>,
+        tail: &'a Option<&'a str>,
         timestamps: bool,
-        until: &'a Option<String>,
+        until: &'a Option<&'a str>,
     ) -> Self {
         let _since: &str = match since {
             Some(since) => since,
@@ -76,8 +76,8 @@ impl<'a> LogsFlags<'a> {
 pub struct ExecFlags<'a> {
     pub detach: bool,
     pub detach_keys: &'a str,
-    pub env: Vec<String>,
-    pub env_file: Vec<String>,
+    pub env: Vec<&'a str>,
+    pub env_file: Vec<&'a str>,
     pub interactive: bool,
     pub privileged: bool,
     //pub tty: bool,
@@ -89,14 +89,14 @@ impl<'a> ExecFlags<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         detach: bool,
-        detach_keys: &'a Option<String>,
-        env: Option<Vec<String>>,
-        env_file: Option<Vec<String>>,
+        detach_keys: &'a Option<&str>,
+        env: Option<Vec<&'a str>>,
+        env_file: Option<Vec<&'a str>>,
         interactive: bool,
         privileged: bool,
         //tty: bool,
-        user: &'a Option<String>,
-        workdir: &'a Option<String>,
+        user: &'a Option<&'a str>,
+        workdir: &'a Option<&'a str>,
     ) -> Self {
         let detach_keys = match &detach_keys {
             Some(d) => d,
@@ -198,8 +198,8 @@ impl<'a> ImagesFlags<'a> {
     pub fn new(
         all: bool,
         digest: bool,
-        filter: &'a Option<String>,
-        format: &'a Option<String>,
+        filter: &'a Option<&'a str>,
+        format: &'a Option<&'a str>,
         no_trunc: bool,
         quiet: bool,
     ) -> Self {
@@ -270,8 +270,8 @@ pub struct PsFlags<'a> {
 impl<'a> PsFlags<'a> {
     pub fn new(
         all: bool,
-        filter: &'a Option<String>,
-        format: &'a Option<String>,
+        filter: &'a Option<&'a str>,
+        format: &'a Option<&'a str>,
         last: bool,
         latests: bool,
         no_trunc: bool,
