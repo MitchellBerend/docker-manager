@@ -1,3 +1,4 @@
+[[#60]](https://github.com/MitchellBerend/docker-manager/pull/60) Added support for removing multiple containers on multiple nodes at once
 
 [[#57]](https://github.com/MitchellBerend/docker-manager/pull/57) Added support for restarting multiple containers on multiple nodes at once
 
