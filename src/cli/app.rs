@@ -163,17 +163,17 @@ pub enum Command {
         size: bool,
     },
 
-    /// Restart one containe unless 2 or more containers are found on remote nodes
+    /// Restart one or more containers on remote nodes
     Restart {
         /// Seconds to wait for stop before killing the container (default 10)
         #[arg(short, long)]
         time: Option<String>,
 
         /// Container name or id
-        container_id: String,
+        container_id: Vec<String>,
     },
 
-    ///Remove one or more containers
+    /// Remove one or more containers
     Rm {
         /// Container name or id
         container_id: String,

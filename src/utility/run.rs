@@ -4,7 +4,7 @@ use crate::constants;
 
 use crate::cli::Command;
 use crate::client::{Client, Node, NodeError};
-use crate::utility::find_container;
+use crate::utility::{find_container, find_containers};
 
 pub async fn run_command(
     command: Command,
@@ -199,12 +199,12 @@ pub async fn run_command(
             bodies.collect::<Vec<Result<String, CommandError>>>().await
         }
         Command::Restart { time, container_id } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, true, identity_file).await;
+            let node_containers: Vec<(String, String, String)> =
+                find_containers(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
+                    vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
@@ -219,11 +219,42 @@ pub async fn run_command(
                     }
                 }
                 _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|(_, result)| result.clone())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                    let bodies = stream::iter(node_containers)
+                        .map(|(hostname, _node, container)| {
+                            let async_time = time.clone();
+                            async move {
+                                let node = Node::new(_node);
+                                match node
+                                    .run_command(
+                                        Command::Restart {
+                                            time: async_time,
+                                            container_id: vec![container],
+                                        },
+                                        sudo,
+                                        identity_file,
+                                    )
+                                    .await
+                                {
+                                    Ok(result) => (hostname.clone(), Ok(result)),
+                                    Err(e) => (hostname.clone(), Err(e)),
+                                }
+                            }
+                        })
+                        .buffer_unordered(constants::CONCURRENT_REQUESTS);
+
+                    let _rv = bodies
+                        .collect::<Vec<(String, Result<String, NodeError>)>>()
+                        .await;
+
+                    let mut rv = vec![];
+
+                    for (_, res) in _rv {
+                        match res {
+                            Ok(s) => rv.push(Ok(s)),
+                            Err(e) => rv.push(Err(CommandError::NodeError(e))),
+                        }
+                    }
+                    rv
                 }
             }
         }
@@ -355,6 +386,7 @@ pub async fn run_command(
 
 pub enum CommandError {
     NoNodesFound(String),
+    NoMultipleNodesFound(Vec<String>),
     MutlipleNodesFound(Vec<String>),
     NodeError(NodeError),
 }
@@ -373,10 +405,15 @@ impl std::fmt::Display for CommandError {
                 "No node found containing the following container: {}",
                 container_id
             ),
+            Self::NoMultipleNodesFound(container_ids) => write!(
+                f,
+                "No nodes found containing the following containers:\n{}",
+                container_ids.join("\n")
+            ),
             Self::MutlipleNodesFound(nodes) => write!(
                 f,
-                "Multiple nodes found with matching criteria:\n{:#?}",
-                nodes
+                "Multiple nodes found with matching criteria:\n{}",
+                nodes.join("\n")
             ),
             Self::NodeError(node_error) => write!(f, "{}", node_error),
         }
@@ -392,7 +429,7 @@ mod test {
         let error = CommandError::MutlipleNodesFound(vec!["abc".into(), "def".into()]);
 
         let correct_string: String =
-            "Multiple nodes found with matching criteria:\n[\n    \"abc\",\n    \"def\",\n]".into();
+            "Multiple nodes found with matching criteria:\nabc\ndef".into();
 
         assert_eq!(correct_string, format!("{}", error));
     }

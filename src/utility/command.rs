@@ -210,9 +210,13 @@ pub async fn run_restart(
     session: openssh::Session,
     sudo: bool,
     time: Option<String>,
-    container_id: &str,
+    container_id: &[String],
 ) -> Result<String, openssh::Error> {
-    let mut command = vec!["restart", container_id];
+    let mut command = vec!["restart"];
+
+    for container in container_id {
+        command.push(container);
+    }
 
     if let Some(time) = &time {
         command.push("--time");
