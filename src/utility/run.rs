@@ -4,7 +4,7 @@ use crate::constants;
 
 use crate::cli::Command;
 use crate::client::{Client, Node, NodeError};
-use crate::utility::find_container;
+use crate::utility::{find_container, find_containers};
 
 pub async fn run_command(
     command: Command,
@@ -199,12 +199,12 @@ pub async fn run_command(
             bodies.collect::<Vec<Result<String, CommandError>>>().await
         }
         Command::Restart { time, container_id } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, true, identity_file).await;
+            let node_containers: Vec<(String, String, String)> =
+                find_containers(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
+                    vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
@@ -219,11 +219,43 @@ pub async fn run_command(
                     }
                 }
                 _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|(_, result)| result.clone())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                    let mut rv = vec![];
+
+                    for node_tuple in node_containers {
+                        let node = Node::new(node_tuple.1);
+                        match node
+                            .run_command(
+                                Command::Restart {
+                                    time: time.clone(),
+                                    container_id: container_id.clone(),
+                                },
+                                sudo,
+                                identity_file,
+                            )
+                            .await
+                        {
+                            Ok(s) => rv.push(Ok(s)),
+                            Err(e) => rv.push(Err(CommandError::NodeError(e))),
+                        };
+                    }
+
+                    rv
+
+                    // let node_tuple = node_containers.get(0).unwrap().to_owned();
+                    // let node = Node::new(node_tuple.1);
+                    // match node
+                    //     .run_command(Command::Restart { time, container_id }, sudo, identity_file)
+                    //     .await
+                    // {
+                    //     Ok(s) => vec![Ok(s)],
+                    //     Err(e) => vec![Err(CommandError::NodeError(e))],
+                    // }
+
+                    // let nodes = node_containers
+                    //     .iter()
+                    //     .map(|(_, result)| result.clone())
+                    //     .collect::<Vec<String>>();
+                    // vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
             }
         }
@@ -355,6 +387,7 @@ pub async fn run_command(
 
 pub enum CommandError {
     NoNodesFound(String),
+    NoMultipleNodesFound(Vec<String>),
     MutlipleNodesFound(Vec<String>),
     NodeError(NodeError),
 }
@@ -372,6 +405,11 @@ impl std::fmt::Display for CommandError {
                 f,
                 "No node found containing the following container: {}",
                 container_id
+            ),
+            Self::NoMultipleNodesFound(container_ids) => write!(
+                f,
+                "No nodes found containing the following containers: {:#?}",
+                container_ids
             ),
             Self::MutlipleNodesFound(nodes) => write!(
                 f,

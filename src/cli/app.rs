@@ -170,7 +170,7 @@ pub enum Command {
         time: Option<String>,
 
         /// Container name or id
-        container_id: String,
+        container_id: Vec<String>,
     },
 
     ///Remove one or more containers
