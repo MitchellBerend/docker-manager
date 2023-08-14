@@ -266,11 +266,11 @@ pub async fn run_command(
             volumes,
         } => {
             let node_containers: Vec<Container> =
-                find_containers(client, &[container_id.clone()], sudo, true, identity_file).await;
+                find_containers(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
+                    vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
@@ -293,11 +293,40 @@ pub async fn run_command(
                     }
                 }
                 _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|result| result.id().to_string())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                    let bodies = stream::iter(node_containers)
+                        .map(|container| async move {
+                            let node = Node::new(container.node().to_string());
+                            match node
+                                .run_command(
+                                    Command::Rm {
+                                        container_id: vec![container.id().to_string()],
+                                        force,
+                                        volumes,
+                                    },
+                                    sudo,
+                                    identity_file,
+                                )
+                                .await
+                            {
+                                Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                Err(e) => (container.hostname().to_string(), Err(e)),
+                            }
+                        })
+                        .buffer_unordered(constants::CONCURRENT_REQUESTS);
+
+                    let _rv = bodies
+                        .collect::<Vec<(String, Result<String, NodeError>)>>()
+                        .await;
+
+                    let mut rv = vec![];
+
+                    for (_, res) in _rv {
+                        match res {
+                            Ok(s) => rv.push(Ok(s)),
+                            Err(e) => rv.push(Err(CommandError::NodeError(e))),
+                        }
+                    }
+                    rv
                 }
             }
         }

@@ -256,10 +256,14 @@ pub async fn run_rm(
     hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    container_id: &str,
+    container_id: &Vec<String>,
     flags: RmFlags,
 ) -> Result<String, openssh::Error> {
-    let mut command = vec!["rm", container_id];
+    let mut command = vec!["rm"];
+
+    for container in container_id {
+        command.push(&container);
+    }
 
     for flag in flags.flags() {
         command.push(flag)
