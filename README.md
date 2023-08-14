@@ -16,17 +16,17 @@ to support all docker commands on remote nodes.
 
 # Current commands
 
-| Command  | Notes                    |
-|----------|--------------------------|
-| EXEC     | --tty is not implemented |
-| IMAGES   |                          |
-| LOGS     |                          |
-| PS       |                          |
-| RESTART  |                          |
-| RM       |                          |
-| START    |                          |
-| STOP     |                          |
-| SYSTEM   |                          |
+| Command  | Notes                         |
+|----------|-------------------------------|
+| EXEC     | --tty is not implemented      |
+| IMAGES   |                               |
+| LOGS     |                               |
+| PS       |                               |
+| RESTART  | Multiple containers supported |
+| RM       |                               |
+| START    |                               |
+| STOP     |                               |
+| SYSTEM   |                               |
 
 
 # Flags

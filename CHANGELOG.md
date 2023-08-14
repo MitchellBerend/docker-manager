@@ -1,3 +1,6 @@
+
+[[#57]](https://github.com/MitchellBerend/docker-manager/pull/57) Added support for restarting multiple containers on multiple nodes at once
+
 [[#56]](https://github.com/MitchellBerend/docker-manager/pull/56) Added the attach flag to the start command
 
 
