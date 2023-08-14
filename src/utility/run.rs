@@ -220,22 +220,24 @@ pub async fn run_command(
                 }
                 _ => {
                     let bodies = stream::iter(node_containers)
-                        .map(|(hostname, _node, container)| async move {
-                            let node = Node::new(_node);
-                            match node
-                                .run_command(
-                                    Command::Restart {
-                                        // time: time,
-                                        time: None,
-                                        container_id: vec![container],
-                                    },
-                                    sudo,
-                                    identity_file,
-                                )
-                                .await
-                            {
-                                Ok(result) => (hostname.clone(), Ok(result)),
-                                Err(e) => (hostname.clone(), Err(e)),
+                        .map(|(hostname, _node, container)| {
+                            let async_time = time.clone();
+                            async move {
+                                let node = Node::new(_node);
+                                match node
+                                    .run_command(
+                                        Command::Restart {
+                                            time: async_time,
+                                            container_id: vec![container],
+                                        },
+                                        sudo,
+                                        identity_file,
+                                    )
+                                    .await
+                                {
+                                    Ok(result) => (hostname.clone(), Ok(result)),
+                                    Err(e) => (hostname.clone(), Err(e)),
+                                }
                             }
                         })
                         .buffer_unordered(constants::CONCURRENT_REQUESTS);
