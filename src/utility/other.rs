@@ -55,6 +55,7 @@ pub async fn find_container(
 }
 
 /// This function is the plural form of the find_container function.
+/// It returns hostname, node, container_id
 pub async fn find_containers(
     client: Client,
     container_ids: &[String],
@@ -104,6 +105,8 @@ pub async fn find_containers(
 
     rv
 }
+
+/// Returns (hostname, node, container_id)
 fn node_filter_map(
     hostname_node: (&str, &Result<String, NodeError>),
     container_id: &str,

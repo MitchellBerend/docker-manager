@@ -219,43 +219,40 @@ pub async fn run_command(
                     }
                 }
                 _ => {
+                    let bodies = stream::iter(node_containers)
+                        .map(|(hostname, _node, container)| async move {
+                            let node = Node::new(_node);
+                            match node
+                                .run_command(
+                                    Command::Restart {
+                                        // time: time,
+                                        time: None,
+                                        container_id: vec![container],
+                                    },
+                                    sudo,
+                                    identity_file.clone(),
+                                )
+                                .await
+                            {
+                                Ok(result) => (hostname.clone(), Ok(result)),
+                                Err(e) => (hostname.clone(), Err(e)),
+                            }
+                        })
+                        .buffer_unordered(constants::CONCURRENT_REQUESTS);
+
+                    let _rv = bodies
+                        .collect::<Vec<(String, Result<String, NodeError>)>>()
+                        .await;
+
                     let mut rv = vec![];
 
-                    for node_tuple in node_containers {
-                        let node = Node::new(node_tuple.1);
-                        match node
-                            .run_command(
-                                Command::Restart {
-                                    time: time.clone(),
-                                    container_id: container_id.clone(),
-                                },
-                                sudo,
-                                identity_file,
-                            )
-                            .await
-                        {
+                    for (_, res) in _rv {
+                        match res {
                             Ok(s) => rv.push(Ok(s)),
                             Err(e) => rv.push(Err(CommandError::NodeError(e))),
-                        };
-                    }
-
+                        }
+                    };
                     rv
-
-                    // let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    // let node = Node::new(node_tuple.1);
-                    // match node
-                    //     .run_command(Command::Restart { time, container_id }, sudo, identity_file)
-                    //     .await
-                    // {
-                    //     Ok(s) => vec![Ok(s)],
-                    //     Err(e) => vec![Err(CommandError::NodeError(e))],
-                    // }
-
-                    // let nodes = node_containers
-                    //     .iter()
-                    //     .map(|(_, result)| result.clone())
-                    //     .collect::<Vec<String>>();
-                    // vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
             }
         }
