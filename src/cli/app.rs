@@ -176,7 +176,7 @@ pub enum Command {
     /// Remove one or more containers
     Rm {
         /// Container name or id
-        container_id: String,
+        container_id: Vec<String>,
 
         /// Force the removal of a running container (uses SIGKILL)
         #[arg(short, long)]
