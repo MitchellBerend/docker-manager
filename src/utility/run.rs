@@ -407,13 +407,13 @@ impl std::fmt::Display for CommandError {
             ),
             Self::NoMultipleNodesFound(container_ids) => write!(
                 f,
-                "No nodes found containing the following containers: {:#?}",
-                container_ids
+                "No nodes found containing the following containers:\n{}",
+                container_ids.join("\n")
             ),
             Self::MutlipleNodesFound(nodes) => write!(
                 f,
-                "Multiple nodes found with matching criteria:\n{:#?}",
-                nodes
+                "Multiple nodes found with matching criteria:\n{}",
+                nodes.join("\n")
             ),
             Self::NodeError(node_error) => write!(f, "{}", node_error),
         }
