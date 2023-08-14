@@ -230,7 +230,7 @@ pub async fn run_command(
                                         container_id: vec![container],
                                     },
                                     sudo,
-                                    identity_file.clone(),
+                                    identity_file,
                                 )
                                 .await
                             {
@@ -251,7 +251,7 @@ pub async fn run_command(
                             Ok(s) => rv.push(Ok(s)),
                             Err(e) => rv.push(Err(CommandError::NodeError(e))),
                         }
-                    };
+                    }
                     rv
                 }
             }
