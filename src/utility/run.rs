@@ -4,7 +4,9 @@ use crate::constants;
 
 use crate::cli::Command;
 use crate::client::{Client, Node, NodeError};
-use crate::utility::{find_container, find_containers};
+use crate::utility::find_containers;
+
+use super::other::Container;
 
 pub async fn run_command(
     command: Command,
@@ -35,8 +37,8 @@ pub async fn run_command(
             user,
             workdir,
         } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, false, identity_file).await;
+            let node_containers: Vec<Container> =
+                find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -45,7 +47,7 @@ pub async fn run_command(
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.1);
+                    let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
                             Command::Exec {
@@ -72,7 +74,7 @@ pub async fn run_command(
                 _ => {
                     let nodes = node_containers
                         .iter()
-                        .map(|(_, result)| result.clone())
+                        .map(|result| result.id().to_string())
                         .collect::<Vec<String>>();
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
@@ -121,8 +123,8 @@ pub async fn run_command(
             timestamps,
             until,
         } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, false, identity_file).await;
+            let node_containers: Vec<Container> =
+                find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
             match node_containers.len() {
                 0 => {
                     vec![Err(CommandError::NoNodesFound(container_id))]
@@ -130,7 +132,7 @@ pub async fn run_command(
                 1 => {
                     // unwrap is safe here since we check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.1);
+                    let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
                             Command::Logs {
@@ -154,7 +156,7 @@ pub async fn run_command(
                 _ => {
                     let nodes = node_containers
                         .iter()
-                        .map(|(_, result)| result.clone())
+                        .map(|result| result.id().to_string())
                         .collect::<Vec<String>>();
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
@@ -199,7 +201,7 @@ pub async fn run_command(
             bodies.collect::<Vec<Result<String, CommandError>>>().await
         }
         Command::Restart { time, container_id } => {
-            let node_containers: Vec<(String, String, String)> =
+            let node_containers: Vec<Container> =
                 find_containers(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
@@ -209,7 +211,7 @@ pub async fn run_command(
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.1);
+                    let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(Command::Restart { time, container_id }, sudo, identity_file)
                         .await
@@ -220,23 +222,23 @@ pub async fn run_command(
                 }
                 _ => {
                     let bodies = stream::iter(node_containers)
-                        .map(|(hostname, _node, container)| {
+                        .map(|container| {
                             let async_time = time.clone();
                             async move {
-                                let node = Node::new(_node);
+                                let node = Node::new(container.node().to_string());
                                 match node
                                     .run_command(
                                         Command::Restart {
                                             time: async_time,
-                                            container_id: vec![container],
+                                            container_id: vec![container.id().to_string()],
                                         },
                                         sudo,
                                         identity_file,
                                     )
                                     .await
                                 {
-                                    Ok(result) => (hostname.clone(), Ok(result)),
-                                    Err(e) => (hostname.clone(), Err(e)),
+                                    Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                    Err(e) => (container.hostname().to_string(), Err(e)),
                                 }
                             }
                         })
@@ -263,8 +265,8 @@ pub async fn run_command(
             force,
             volumes,
         } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, true, identity_file).await;
+            let node_containers: Vec<Container> =
+                find_containers(client, &[container_id.clone()], sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -273,7 +275,7 @@ pub async fn run_command(
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.1);
+                    let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
                             Command::Rm {
@@ -293,7 +295,7 @@ pub async fn run_command(
                 _ => {
                     let nodes = node_containers
                         .iter()
-                        .map(|(_, result)| result.clone())
+                        .map(|result| result.id().to_string())
                         .collect::<Vec<String>>();
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
@@ -303,8 +305,8 @@ pub async fn run_command(
             container_id,
             attach,
         } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, true, identity_file).await;
+            let node_containers: Vec<Container> =
+                find_containers(client, &[container_id.clone()], sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -313,7 +315,7 @@ pub async fn run_command(
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.1);
+                    let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(
                             Command::Start {
@@ -332,15 +334,15 @@ pub async fn run_command(
                 _ => {
                     let nodes = node_containers
                         .iter()
-                        .map(|(_, result)| result.clone())
+                        .map(|result| result.id().to_string())
                         .collect::<Vec<String>>();
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
             }
         }
         Command::Stop { container_id } => {
-            let node_containers: Vec<(String, String)> =
-                find_container(client, &container_id, sudo, false, identity_file).await;
+            let node_containers: Vec<Container> =
+                find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
 
             match node_containers.len() {
                 0 => {
@@ -349,7 +351,7 @@ pub async fn run_command(
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
                     let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.1);
+                    let node = Node::new(node_tuple.hostname().to_string());
                     match node
                         .run_command(Command::Stop { container_id }, sudo, identity_file)
                         .await
@@ -361,7 +363,7 @@ pub async fn run_command(
                 _ => {
                     let nodes = node_containers
                         .iter()
-                        .map(|(_, result)| result.clone())
+                        .map(|result| result.id().to_string())
                         .collect::<Vec<String>>();
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
