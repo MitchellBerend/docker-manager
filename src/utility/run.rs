@@ -1,5 +1,4 @@
 use futures::{stream, StreamExt};
-
 use crate::constants;
 
 use crate::cli::InternalCommand;
@@ -227,13 +226,12 @@ pub async fn run_command<'a>(
                 _ => {
                     let bodies = stream::iter(node_containers)
                         .map(|container| {
-                            let async_time = time.clone();
                             async move {
                                 let node = Node::new(container.node().to_string());
                                 match node
                                     .run_command(
                                         InternalCommand::Restart {
-                                            time: async_time,
+                                            time,
                                             container_id: vec![container.id()],
                                         },
                                         sudo,
@@ -339,11 +337,11 @@ pub async fn run_command<'a>(
             attach,
         } => {
             let node_containers: Vec<Container> =
-                find_containers(client, &[container_id.clone()], sudo, true, identity_file).await;
+                find_containers(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
+                    vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
@@ -375,11 +373,11 @@ pub async fn run_command<'a>(
         }
         InternalCommand::Stop { container_id } => {
             let node_containers: Vec<Container> =
-                find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
+                find_containers(client, &container_id, sudo, false, identity_file).await;
 
             match node_containers.len() {
                 0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
+                    vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
