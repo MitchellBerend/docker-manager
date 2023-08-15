@@ -187,20 +187,20 @@ pub enum Command {
         volumes: bool,
     },
 
-    /// Starts a given container unless 2 or more containers are found on remote nodes
+    /// Starts one or more given containers
     Start {
         /// Attach STDOUT/STDERR and forward signals
         #[arg(short, long)]
         attach: bool,
 
         /// Container name or id
-        container_id: String,
+        container_id: Vec<String>,
     },
 
-    /// Stops a given container unless 2 or more containers are found on remote nodes
+    /// Stops one or more given containers
     Stop {
         /// Container name or id
-        container_id: String,
+        container_id: Vec<String>,
     },
 
     /// Manage Docker
@@ -325,7 +325,7 @@ impl Command {
                 };
 
                 InternalCommand::Exec {
-                    container_id: &container_id,
+                    container_id,
                     command: commands,
                     detach: *detach,
                     detach_keys: detach_keys.as_deref(),
@@ -389,7 +389,7 @@ impl Command {
                 };
 
                 InternalCommand::Logs {
-                    container_id: &container_id,
+                    container_id,
                     details: *details,
                     follow: *follow,
                     since: _since,
@@ -466,25 +466,27 @@ impl Command {
                 attach,
                 container_id,
             } => {
-                // let mut _container_id: Vec<&str> = vec![];
-                //
-                // for cont in container_id {
-                //     _container_id.push(cont)
-                // }
+                let mut _container_id: Vec<&str> = vec![];
+
+                for cont in container_id {
+                    _container_id.push(cont)
+                }
 
                 InternalCommand::Start {
                     attach: *attach,
-                    container_id,
+                    container_id: _container_id,
                 }
             }
             Self::Stop { container_id } => {
-                //
-                // let mut _container_id: Vec<&str> = vec![];
-                //
-                // for cont in container_id {
-                //     _container_id.push(cont)
-                // }
-                InternalCommand::Stop { container_id }
+                let mut _container_id: Vec<&str> = vec![];
+
+                for cont in container_id {
+                    _container_id.push(cont)
+                }
+
+                InternalCommand::Stop {
+                    container_id: _container_id,
+                }
             }
             Self::System(s) => InternalCommand::System(s.clone()),
             _ => unreachable!(),
@@ -625,13 +627,13 @@ pub enum InternalCommand<'a> {
         attach: bool,
 
         /// Container name or id
-        container_id: &'a str,
+        container_id: Vec<&'a str>,
     },
 
     /// Stops a given container unless 2 or more containers are found on remote nodes
     Stop {
         /// Container name or id
-        container_id: &'a str,
+        container_id: Vec<&'a str>,
     },
 
     /// Manage Docker

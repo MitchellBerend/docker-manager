@@ -262,7 +262,7 @@ pub async fn run_rm(
     let mut command = vec!["rm"];
 
     for container in container_id {
-        command.push(&container);
+        command.push(container);
     }
 
     for flag in flags.flags() {
@@ -299,10 +299,13 @@ pub async fn run_start(
     hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    container_id: &str,
+    container_id: &Vec<&str>,
     attatch: bool,
 ) -> Result<String, openssh::Error> {
-    let mut command = vec!["start", container_id];
+    let mut command = vec!["start"];
+    for container in container_id {
+        command.push(container);
+    }
 
     if attatch {
         command.push("-a");
@@ -338,9 +341,12 @@ pub async fn run_stop(
     hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    container_id: &str,
+    container_id: &Vec<&str>,
 ) -> Result<String, openssh::Error> {
-    let command = vec!["stop", container_id];
+    let mut command = vec!["stop"];
+    for container in container_id {
+        command.push(container);
+    }
 
     let _output = match sudo {
         true => {

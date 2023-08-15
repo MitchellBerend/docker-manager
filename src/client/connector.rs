@@ -104,7 +104,7 @@ impl Node {
                     &user,
                     &workdir,
                 );
-                match command::run_exec(&self.address, session, &container_id, sudo, command, flags)
+                match command::run_exec(&self.address, session, container_id, sudo, command, flags)
                     .await
                 {
                     Ok(result) => Ok(result),
@@ -137,7 +137,7 @@ impl Node {
             } => {
                 let flags = LogsFlags::new(details, follow, &since, &tail, timestamps, &until);
 
-                match command::run_logs(&self.address, session, &container_id, sudo, flags).await {
+                match command::run_logs(&self.address, session, container_id, sudo, flags).await {
                     //, follow).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),

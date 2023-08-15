@@ -1,6 +1,5 @@
-use futures::{stream, StreamExt};
-
 use crate::constants;
+use futures::{stream, StreamExt};
 
 use crate::cli::InternalCommand;
 use crate::client::{Client, Node, NodeError};
@@ -226,24 +225,21 @@ pub async fn run_command<'a>(
                 }
                 _ => {
                     let bodies = stream::iter(node_containers)
-                        .map(|container| {
-                            let async_time = time.clone();
-                            async move {
-                                let node = Node::new(container.node().to_string());
-                                match node
-                                    .run_command(
-                                        InternalCommand::Restart {
-                                            time: async_time,
-                                            container_id: vec![container.id()],
-                                        },
-                                        sudo,
-                                        identity_file,
-                                    )
-                                    .await
-                                {
-                                    Ok(result) => (container.hostname().to_string(), Ok(result)),
-                                    Err(e) => (container.hostname().to_string(), Err(e)),
-                                }
+                        .map(|container| async move {
+                            let node = Node::new(container.node().to_string());
+                            match node
+                                .run_command(
+                                    InternalCommand::Restart {
+                                        time,
+                                        container_id: vec![container.id()],
+                                    },
+                                    sudo,
+                                    identity_file,
+                                )
+                                .await
+                            {
+                                Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                Err(e) => (container.hostname().to_string(), Err(e)),
                             }
                         })
                         .buffer_unordered(constants::CONCURRENT_REQUESTS);
@@ -339,11 +335,11 @@ pub async fn run_command<'a>(
             attach,
         } => {
             let node_containers: Vec<Container> =
-                find_containers(client, &[container_id.clone()], sudo, true, identity_file).await;
+                find_containers(client, &container_id, sudo, true, identity_file).await;
 
             match node_containers.len() {
                 0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
+                    vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
@@ -365,21 +361,54 @@ pub async fn run_command<'a>(
                     }
                 }
                 _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|result| result.id().to_string())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                    let bodies = stream::iter(node_containers)
+                        .map(|container| async move {
+                            let node = Node::new(container.node().to_string());
+                            match node
+                                .run_command(
+                                    InternalCommand::Start {
+                                        container_id: vec![container.id()],
+                                        attach,
+                                    },
+                                    sudo,
+                                    identity_file,
+                                )
+                                .await
+                            {
+                                Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                Err(e) => (container.hostname().to_string(), Err(e)),
+                            }
+                        })
+                        .buffer_unordered(constants::CONCURRENT_REQUESTS);
+
+                    let _rv = bodies
+                        .collect::<Vec<(String, Result<String, NodeError>)>>()
+                        .await;
+
+                    let mut rv = vec![];
+
+                    for (_, res) in _rv {
+                        match res {
+                            Ok(s) => rv.push(Ok(s)),
+                            Err(e) => rv.push(Err(CommandError::NodeError(e))),
+                        }
+                    }
+                    rv
+                    // let nodes = node_containers
+                    //     .iter()
+                    //     .map(|result| result.id().to_string())
+                    //     .collect::<Vec<String>>();
+                    // vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
             }
         }
         InternalCommand::Stop { container_id } => {
             let node_containers: Vec<Container> =
-                find_containers(client, &[container_id.clone()], sudo, false, identity_file).await;
+                find_containers(client, &container_id, sudo, false, identity_file).await;
 
             match node_containers.len() {
                 0 => {
-                    vec![Err(CommandError::NoNodesFound(container_id))]
+                    vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
                 1 => {
                     // unwrap is safe here since we .unwrap()check if there is exactly 1 element
@@ -394,11 +423,38 @@ pub async fn run_command<'a>(
                     }
                 }
                 _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|result| result.id().to_string())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                    let bodies = stream::iter(node_containers)
+                        .map(|container| async move {
+                            let node = Node::new(container.node().to_string());
+                            match node
+                                .run_command(
+                                    InternalCommand::Stop {
+                                        container_id: vec![container.id()],
+                                    },
+                                    sudo,
+                                    identity_file,
+                                )
+                                .await
+                            {
+                                Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                Err(e) => (container.hostname().to_string(), Err(e)),
+                            }
+                        })
+                        .buffer_unordered(constants::CONCURRENT_REQUESTS);
+
+                    let _rv = bodies
+                        .collect::<Vec<(String, Result<String, NodeError>)>>()
+                        .await;
+
+                    let mut rv = vec![];
+
+                    for (_, res) in _rv {
+                        match res {
+                            Ok(s) => rv.push(Ok(s)),
+                            Err(e) => rv.push(Err(CommandError::NodeError(e))),
+                        }
+                    }
+                    rv
                 }
             }
         }

@@ -24,8 +24,8 @@ to support all docker commands on remote nodes.
 | PS       |                               |
 | RESTART  | Multiple containers supported |
 | RM       | Multiple containers supported |
-| START    |                               |
-| STOP     |                               |
+| START    | Multiple containers supported |
+| STOP     | Multiple containers supported |
 | SYSTEM   |                               |
 
 
