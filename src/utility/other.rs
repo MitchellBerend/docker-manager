@@ -1,6 +1,6 @@
 use crate::constants;
 
-use crate::cli::Command;
+use crate::cli::InternalCommand;
 use crate::client::{Client, NodeError};
 
 use futures::{stream, StreamExt};
@@ -9,7 +9,7 @@ use futures::{stream, StreamExt};
 /// Vec of `Container`.
 pub async fn find_containers(
     client: Client,
-    container_ids: &[String],
+    container_ids: &[&str],
     sudo: bool,
     all: bool,
     identity_file: Option<&str>,
@@ -21,7 +21,7 @@ pub async fn find_containers(
             .map(|(hostname, node)| async move {
                 match node
                     .run_command(
-                        Command::Ps {
+                        InternalCommand::Ps {
                             all,
                             filter: None,
                             format: None,

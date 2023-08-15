@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crate::cli::flags::{ExecFlags, ImagesFlags, LogsFlags, PsFlags, RmFlags};
-use crate::cli::Command;
+use crate::cli::InternalCommand;
 use crate::utility::command;
 
 use regex::Regex;
@@ -65,7 +65,7 @@ impl Node {
 
     pub async fn run_command(
         &self,
-        command: Command,
+        command: InternalCommand<'_>,
         sudo: bool,
         identity_file: Option<&str>,
     ) -> Result<String, NodeError> {
@@ -82,11 +82,7 @@ impl Node {
         };
 
         match command {
-            Command::Completion { shell: _ } => {
-                // This command should not lead to any activity
-                unreachable!()
-            }
-            Command::Exec {
+            InternalCommand::Exec {
                 container_id,
                 command,
                 detach,
@@ -115,7 +111,7 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Images {
+            InternalCommand::Images {
                 all,
                 digest,
                 filter,
@@ -130,7 +126,7 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Logs {
+            InternalCommand::Logs {
                 container_id,
                 details,
                 follow,
@@ -147,7 +143,7 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Ps {
+            InternalCommand::Ps {
                 all,
                 filter,
                 format,
@@ -164,14 +160,14 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Restart { time, container_id } => {
+            InternalCommand::Restart { time, container_id } => {
                 match command::run_restart(&self.address, session, sudo, time, &container_id).await
                 {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Rm {
+            InternalCommand::Rm {
                 container_id,
                 force,
                 volumes,
@@ -182,7 +178,7 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Start {
+            InternalCommand::Start {
                 container_id,
                 attach,
             } => {
@@ -192,13 +188,13 @@ impl Node {
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::Stop { container_id } => {
+            InternalCommand::Stop { container_id } => {
                 match command::run_stop(&self.address, session, sudo, &container_id).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),
                 }
             }
-            Command::System(command) => {
+            InternalCommand::System(command) => {
                 match command::run_system(&self.address, session, sudo, command).await {
                     Ok(result) => Ok(result),
                     Err(e) => Err(NodeError::SessionError(self.address.clone(), e)),

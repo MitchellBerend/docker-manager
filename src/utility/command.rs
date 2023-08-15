@@ -6,7 +6,7 @@ pub async fn run_exec(
     session: openssh::Session,
     container_id: &str,
     sudo: bool,
-    command: Vec<String>,
+    command: Vec<&str>,
     //args: Option<Vec<String>>,
     flags: ExecFlags<'_>,
 ) -> Result<String, openssh::Error> {
@@ -209,8 +209,8 @@ pub async fn run_restart(
     hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    time: Option<String>,
-    container_id: &[String],
+    time: Option<&str>,
+    container_id: &[&str],
 ) -> Result<String, openssh::Error> {
     let mut command = vec!["restart"];
 
@@ -256,7 +256,7 @@ pub async fn run_rm(
     hostname: &str,
     session: openssh::Session,
     sudo: bool,
-    container_id: &Vec<String>,
+    container_id: &Vec<&str>,
     flags: RmFlags,
 ) -> Result<String, openssh::Error> {
     let mut command = vec!["rm"];

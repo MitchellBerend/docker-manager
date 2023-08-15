@@ -38,7 +38,10 @@ pub async fn run() {
                 cli::Command::Images { .. } => parse = true,
                 _ => (),
             }
-            for word in utility::run_command(_cli.command, _cli.sudo, regex, identity_file).await {
+            let internal_command = _cli.command.internal_reference_command();
+            for word in
+                utility::run_command(internal_command, _cli.sudo, regex, identity_file).await
+            {
                 match word {
                     Ok(s) => result.push_str(&s),
                     Err(e) => {
