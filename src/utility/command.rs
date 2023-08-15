@@ -7,7 +7,6 @@ pub async fn run_exec(
     container_id: &str,
     sudo: bool,
     command: Vec<&str>,
-    //args: Option<Vec<String>>,
     flags: ExecFlags<'_>,
 ) -> Result<String, openssh::Error> {
     let mut _command: Vec<&str> = vec!["exec"];
