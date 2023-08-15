@@ -1,3 +1,10 @@
+
+
+v0.0.8
+---
+
+## Added
+
 [[#62]](https://github.com/MitchellBerend/docker-manager/pull/62) Added support multiple container_ids for the start and stop commands
 
 [[#60]](https://github.com/MitchellBerend/docker-manager/pull/60) Added support for removing multiple containers on multiple nodes at once
