@@ -85,15 +85,11 @@ pub async fn run_command<'a>(
         } => {
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
-                    // let _filter: Option<String> = filter.map(String::from);
-                    // let _format: Option<String> = format.map(String::from);
                     match node
                         .run_command(
                             InternalCommand::Images {
                                 all,
                                 digest,
-                                // filter: _filter,
-                                // format: _format,
                                 filter,
                                 format,
                                 no_trunc,
@@ -171,14 +167,10 @@ pub async fn run_command<'a>(
         } => {
             let bodies = stream::iter(client.nodes_info())
                 .map(|(_, node)| async {
-                    // let _filter: Option<String> = filter.map(String::from);
-                    // let _format: Option<String> = format.map(String::from);
                     match node
                         .run_command(
                             InternalCommand::Ps {
                                 all,
-                                // filter: _filter,
-                                // format: _format,
                                 filter,
                                 format,
                                 last,
@@ -206,22 +198,6 @@ pub async fn run_command<'a>(
             match node_containers.len() {
                 0 => {
                     vec![Err(CommandError::NoMultipleNodesFound(container_id))]
-                }
-                1 => {
-                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
-                    let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.hostname().to_string());
-                    match node
-                        .run_command(
-                            InternalCommand::Restart { time, container_id },
-                            sudo,
-                            identity_file,
-                        )
-                        .await
-                    {
-                        Ok(s) => vec![Ok(s)],
-                        Err(e) => vec![Err(CommandError::NodeError(e))],
-                    }
                 }
                 _ => {
                     let bodies = stream::iter(node_containers)
@@ -272,26 +248,6 @@ pub async fn run_command<'a>(
                 0 => {
                     vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
-                1 => {
-                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
-                    let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.hostname().to_string());
-                    match node
-                        .run_command(
-                            InternalCommand::Rm {
-                                container_id,
-                                force,
-                                volumes,
-                            },
-                            sudo,
-                            identity_file,
-                        )
-                        .await
-                    {
-                        Ok(s) => vec![Ok(s)],
-                        Err(e) => vec![Err(CommandError::NodeError(e))],
-                    }
-                }
                 _ => {
                     let bodies = stream::iter(node_containers)
                         .map(|container| async move {
@@ -341,25 +297,6 @@ pub async fn run_command<'a>(
                 0 => {
                     vec![Err(CommandError::NoMultipleNodesFound(container_id))]
                 }
-                1 => {
-                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
-                    let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.hostname().to_string());
-                    match node
-                        .run_command(
-                            InternalCommand::Start {
-                                container_id,
-                                attach,
-                            },
-                            sudo,
-                            identity_file,
-                        )
-                        .await
-                    {
-                        Ok(s) => vec![Ok(s)],
-                        Err(e) => vec![Err(CommandError::NodeError(e))],
-                    }
-                }
                 _ => {
                     let bodies = stream::iter(node_containers)
                         .map(|container| async move {
@@ -394,11 +331,6 @@ pub async fn run_command<'a>(
                         }
                     }
                     rv
-                    // let nodes = node_containers
-                    //     .iter()
-                    //     .map(|result| result.id().to_string())
-                    //     .collect::<Vec<String>>();
-                    // vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
             }
         }
@@ -409,18 +341,6 @@ pub async fn run_command<'a>(
             match node_containers.len() {
                 0 => {
                     vec![Err(CommandError::NoMultipleNodesFound(container_id))]
-                }
-                1 => {
-                    // unwrap is safe here since we .unwrap()check if there is exactly 1 element
-                    let node_tuple = node_containers.get(0).unwrap().to_owned();
-                    let node = Node::new(node_tuple.hostname().to_string());
-                    match node
-                        .run_command(InternalCommand::Stop { container_id }, sudo, identity_file)
-                        .await
-                    {
-                        Ok(s) => vec![Ok(s)],
-                        Err(e) => vec![Err(CommandError::NodeError(e))],
-                    }
                 }
                 _ => {
                     let bodies = stream::iter(node_containers)
