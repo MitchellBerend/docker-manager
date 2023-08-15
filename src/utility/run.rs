@@ -1,5 +1,5 @@
-use futures::{stream, StreamExt};
 use crate::constants;
+use futures::{stream, StreamExt};
 
 use crate::cli::InternalCommand;
 use crate::client::{Client, Node, NodeError};
@@ -225,23 +225,21 @@ pub async fn run_command<'a>(
                 }
                 _ => {
                     let bodies = stream::iter(node_containers)
-                        .map(|container| {
-                            async move {
-                                let node = Node::new(container.node().to_string());
-                                match node
-                                    .run_command(
-                                        InternalCommand::Restart {
-                                            time,
-                                            container_id: vec![container.id()],
-                                        },
-                                        sudo,
-                                        identity_file,
-                                    )
-                                    .await
-                                {
-                                    Ok(result) => (container.hostname().to_string(), Ok(result)),
-                                    Err(e) => (container.hostname().to_string(), Err(e)),
-                                }
+                        .map(|container| async move {
+                            let node = Node::new(container.node().to_string());
+                            match node
+                                .run_command(
+                                    InternalCommand::Restart {
+                                        time,
+                                        container_id: vec![container.id()],
+                                    },
+                                    sudo,
+                                    identity_file,
+                                )
+                                .await
+                            {
+                                Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                Err(e) => (container.hostname().to_string(), Err(e)),
                             }
                         })
                         .buffer_unordered(constants::CONCURRENT_REQUESTS);
