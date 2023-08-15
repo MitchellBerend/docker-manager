@@ -361,11 +361,44 @@ pub async fn run_command<'a>(
                     }
                 }
                 _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|result| result.id().to_string())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                    let bodies = stream::iter(node_containers)
+                        .map(|container| async move {
+                            let node = Node::new(container.node().to_string());
+                            match node
+                                .run_command(
+                                    InternalCommand::Start {
+                                        container_id: vec![container.id()],
+                                        attach,
+                                    },
+                                    sudo,
+                                    identity_file,
+                                )
+                                .await
+                            {
+                                Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                Err(e) => (container.hostname().to_string(), Err(e)),
+                            }
+                        })
+                        .buffer_unordered(constants::CONCURRENT_REQUESTS);
+
+                    let _rv = bodies
+                        .collect::<Vec<(String, Result<String, NodeError>)>>()
+                        .await;
+
+                    let mut rv = vec![];
+
+                    for (_, res) in _rv {
+                        match res {
+                            Ok(s) => rv.push(Ok(s)),
+                            Err(e) => rv.push(Err(CommandError::NodeError(e))),
+                        }
+                    }
+                    rv
+                    // let nodes = node_containers
+                    //     .iter()
+                    //     .map(|result| result.id().to_string())
+                    //     .collect::<Vec<String>>();
+                    // vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
             }
         }
@@ -390,11 +423,38 @@ pub async fn run_command<'a>(
                     }
                 }
                 _ => {
-                    let nodes = node_containers
-                        .iter()
-                        .map(|result| result.id().to_string())
-                        .collect::<Vec<String>>();
-                    vec![Err(CommandError::MutlipleNodesFound(nodes))]
+                    let bodies = stream::iter(node_containers)
+                        .map(|container| async move {
+                            let node = Node::new(container.node().to_string());
+                            match node
+                                .run_command(
+                                    InternalCommand::Stop {
+                                        container_id: vec![container.id()],
+                                    },
+                                    sudo,
+                                    identity_file,
+                                )
+                                .await
+                            {
+                                Ok(result) => (container.hostname().to_string(), Ok(result)),
+                                Err(e) => (container.hostname().to_string(), Err(e)),
+                            }
+                        })
+                        .buffer_unordered(constants::CONCURRENT_REQUESTS);
+
+                    let _rv = bodies
+                        .collect::<Vec<(String, Result<String, NodeError>)>>()
+                        .await;
+
+                    let mut rv = vec![];
+
+                    for (_, res) in _rv {
+                        match res {
+                            Ok(s) => rv.push(Ok(s)),
+                            Err(e) => rv.push(Err(CommandError::NodeError(e))),
+                        }
+                    }
+                    rv
                 }
             }
         }
