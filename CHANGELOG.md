@@ -1,4 +1,6 @@
 
+[[#67]](https://github.com/MitchellBerend/docker-manager/pull/67) Updated the `find_containers` function to return a `Container` object that holds all found containers
+
 
 v0.0.8
 ---
