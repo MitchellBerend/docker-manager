@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::constants;
 
 use crate::cli::InternalCommand;
@@ -15,6 +17,7 @@ pub async fn find_containers(
     identity_file: Option<&str>,
 ) -> Vec<Container> {
     let mut rv = vec![];
+    let mut inter: HashMap<String, Vec<String>> = HashMap::new();
 
     for container_id in container_ids {
         let bodies = stream::iter(client.nodes_info())
@@ -50,7 +53,24 @@ pub async fn find_containers(
             .collect::<Vec<(String, String, String)>>();
 
         for container in containers {
-            rv.push(Container::new(container.0, container.1, container.2))
+            let hostname = container.0;
+            let container_id = container.2;
+
+            if let Some(host_containers) = inter.get_mut(&hostname) {
+                host_containers.push(container_id);
+            } else {
+                inter.insert(hostname, vec![container_id]);
+            }
+        }
+    }
+
+    for (hostname, containers) in inter.iter() {
+        if !containers.is_empty() {
+            rv.push(Container::new(
+                hostname.to_string(),
+                hostname.to_string(),
+                containers.to_vec(),
+            ))
         }
     }
 
@@ -78,6 +98,7 @@ fn node_filter_map(
     }
 }
 
+#[derive(Debug)]
 pub struct FindContainerResult {
     containers: Vec<Container>,
 }
@@ -90,14 +111,15 @@ impl Iterator for FindContainerResult {
     }
 }
 
+#[derive(Debug)]
 pub struct Container {
     hostname: String,
     node: String,
-    container_id: String,
+    container_id: Vec<String>,
 }
 
 impl Container {
-    fn new(hostname: String, node: String, container_id: String) -> Self {
+    fn new(hostname: String, node: String, container_id: Vec<String>) -> Self {
         Self {
             hostname,
             node,
@@ -113,8 +135,14 @@ impl Container {
         &self.node
     }
 
-    pub fn id(&self) -> &str {
-        &self.container_id
+    pub fn id(&self) -> Vec<&str> {
+        let mut rv: Vec<&str> = vec![];
+
+        for container in &self.container_id {
+            rv.push(container);
+        }
+
+        rv
     }
 }
 

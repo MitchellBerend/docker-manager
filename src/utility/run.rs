@@ -69,7 +69,7 @@ pub async fn run_command<'a>(
                 _ => {
                     let nodes = node_containers
                         .iter()
-                        .map(|result| result.id().to_string())
+                        .map(|result| result.id().join(" "))
                         .collect::<Vec<String>>();
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
@@ -149,7 +149,7 @@ pub async fn run_command<'a>(
                 _ => {
                     let nodes = node_containers
                         .iter()
-                        .map(|result| result.id().to_string())
+                        .map(|result| result.id().join(" "))
                         .collect::<Vec<String>>();
                     vec![Err(CommandError::MutlipleNodesFound(nodes))]
                 }
@@ -207,7 +207,7 @@ pub async fn run_command<'a>(
                                 .run_command(
                                     InternalCommand::Restart {
                                         time,
-                                        container_id: vec![container.id()],
+                                        container_id: container.id(),
                                     },
                                     sudo,
                                     identity_file,
@@ -255,7 +255,7 @@ pub async fn run_command<'a>(
                             match node
                                 .run_command(
                                     InternalCommand::Rm {
-                                        container_id: vec![container.id()],
+                                        container_id: container.id(),
                                         force,
                                         volumes,
                                     },
@@ -304,7 +304,7 @@ pub async fn run_command<'a>(
                             match node
                                 .run_command(
                                     InternalCommand::Start {
-                                        container_id: vec![container.id()],
+                                        container_id: container.id(),
                                         attach,
                                     },
                                     sudo,
@@ -349,7 +349,7 @@ pub async fn run_command<'a>(
                             match node
                                 .run_command(
                                     InternalCommand::Stop {
-                                        container_id: vec![container.id()],
+                                        container_id: container.id(),
                                     },
                                     sudo,
                                     identity_file,
