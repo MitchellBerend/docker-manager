@@ -17,7 +17,6 @@ pub async fn find_containers(
     identity_file: Option<&str>,
 ) -> Vec<Container> {
     let mut rv = vec![];
-
     let mut inter: HashMap<String, Vec<String>> = HashMap::new();
 
     for container_id in container_ids {
