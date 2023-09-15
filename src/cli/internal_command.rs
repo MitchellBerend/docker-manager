@@ -1,4 +1,3 @@
-
 use super::System;
 
 pub enum InternalCommand<'a> {
